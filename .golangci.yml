@@ -2,13 +2,111 @@
 #
 # SPDX-License-Identifier: CC0-1.0
 
-version: "2"
+version: "2" # golangci-lint v2 config format
+
+run:
+  timeout: 5m # default is no timeout, stop hung CI runs
 
 linters:
-  default: standard
+  default: standard # errcheck, govet, ineffassign, staticcheck, unused
   enable:
-    - gosec
+    - gosec           # security problems
+    - depguard        # only allow std lib unless approved
+    - gocognit        # flag hard to follow functions
+    - nestif          # flag deep if nesting
+    - funlen          # limit function length
+    - revive          # naming and style rules
+    - errorlint       # correct error wrapping and comparison
+    - nolintlint      # every //nolint needs a reason
+    - misspell        # common English typos
+    - unconvert       # needless type conversions
+    - unparam         # unused function params and results
+    - predeclared     # vars named like builtins (len, new, copy)
+    - bodyclose       # unclosed HTTP response bodies
+    - noctx           # calls without a context.Context
+    - contextcheck    # context not passed down
+    - fatcontext      # contexts nested in loops
+    - nilerr          # returns nil after err != nil
+    - nilnesserr      # returns a different nil error after err check
+    - errname         # error vars start with Err, error types end with Error
+    - makezero        # append to slice made with length > 0
+    - forcetypeassert # unchecked type assertions
+    - durationcheck   # multiplying two durations
+    - recvcheck       # mixed pointer and value receivers
+    - exhaustive      # enum switch misses cases
+    - gocritic        # bug, style and performance checks
+    - thelper         # test helpers must call t.Helper()
+    - tparallel       # wrong t.Parallel() use
+    - usetesting      # t.TempDir and t.Chdir instead of os temp dirs and os.Chdir
+    - noinlineerr     # no if err := f(); err != nil
+    - modernize       # use newer Go features
+    - intrange        # for i := range n
+    - sqlclosecheck   # unclosed sql.Rows and sql.Stmt
+    - rowserrcheck    # unchecked Rows.Err()
+    - musttag         # marshaled structs without field tags
+    - sloglint        # consistent log/slog calls
+    - loggercheck     # odd key-value pairs in logger calls
+    - spancheck       # OpenTelemetry spans without End()
+    - protogetter     # proto fields read without getters
+    - promlinter      # bad Prometheus metric names
+    - canonicalheader # non-canonical http.Header keys
+    - nosprintfhostport # Sprintf host:port breaks IPv6
+    - asasalint       # []any passed as a single any
+    - reassign        # overwriting package vars like io.EOF
+    - bidichk         # hidden bidirectional Unicode
+    - copyloopvar     # loop var copies not needed since Go 1.22
+    - exptostd        # x/exp funcs now in std lib
+    - gocheckcompilerdirectives # typos in //go: lines
+    - gomoddirectives # replace and similar in go.mod
+    - usestdlibvars   # http.MethodGet instead of "GET"
+    - mirror          # matching bytes/strings call
+    - perfsprint      # cheaper than fmt.Sprintf
+    - errchkjson      # unsupported types and unchecked errors in JSON calls
+    - wastedassign    # values assigned and never used
+    - nilnil          # return nil, nil instead of a value or an error
+    - containedctx    # context.Context stored in a struct
+    - dupword         # repeated words like "the the"
 
-formatters:
+  exclusions: # where issues are ignored
+    warn-unused: true # warn when a rule matches nothing
+    rules:
+      - path: _test\.go # test files only
+        linters:
+          - funlen # table-driven tests grow with each case
+
+  settings: # per-linter options
+    gocritic:
+      enabled-tags:
+        - diagnostic # likely bugs, on top of the default checks
+    gocognit:
+      min-complexity: 20 # default 30, docs recommend 10-20
+    govet:
+      enable:
+        - shadow              # inner := hides an outer var, often err
+        - nilness             # impossible or redundant nil checks
+        - unusedwrite         # struct field writes never read
+        - deepequalerrors     # reflect.DeepEqual on errors
+        - reflectvaluecompare # == on reflect.Value
+        - sortslice           # sort.Slice on a non-slice
+    depguard:
+      rules:
+        main: # applies to all files
+          list-mode: strict # deny everything not in allow
+          allow:
+            - $gostd # Go standard library
+            - go.opentelemetry.io/
+            - github.com/prometheus/client_golang/
+            - google.golang.org/
+            # Own module has to be allowed, or internal imports fail
+            #- example.com/replace/with/your/module
+    nolintlint:
+      require-explanation: true # reason text after //nolint
+      require-specific: true # no blanket //nolint without linter name
+
+issues: # output limits
+  max-issues-per-linter: 0 # default 50 hides issues
+  max-same-issues: 0 # default 3 hides repeats with the same text
+
+formatters: # code formatting checks
   enable:
-    - gofmt
+    - gofmt # same formatter GoLand runs on save
