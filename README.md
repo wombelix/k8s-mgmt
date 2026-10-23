@@ -4,13 +4,13 @@ SPDX-FileCopyrightText: 2026 Dominik Wombacher <dominik@wombacher.cc>
 SPDX-License-Identifier: Apache-2.0
 -->
 
-# tpl
+# k8s-mgmt
 
-Template repo with basic configs, LICENSE and README.
+
 
 <!-- markdownlint-disable MD013 -->
-[![REUSE status](https://api.reuse.software/badge/github.com/wombelix/tpl)](https://api.reuse.software/info/github.com/wombelix/tpl)
-[![Mirror](https://github.com/wombelix/tpl/actions/workflows/mirror.yml/badge.svg)](https://github.com/wombelix/tpl/actions/workflows/mirror.yml)
+[![REUSE status](https://api.reuse.software/badge/github.com/wombelix/k8s-mgmt)](https://api.reuse.software/info/github.com/wombelix/k8s-mgmt)
+[![Mirror](https://github.com/wombelix/k8s-mgmt/actions/workflows/mirror.yml/badge.svg)](https://github.com/wombelix/k8s-mgmt/actions/workflows/mirror.yml)
 <!-- markdownlint-enable MD013 -->
 
 ## Table of Contents
@@ -23,11 +23,11 @@ Template repo with basic configs, LICENSE and README.
 ## Source
 
 The primary location is:
-[github.com/wombelix/tpl](https://github.com/wombelix/tpl)
+[github.com/wombelix/k8s-mgmt](https://github.com/wombelix/k8s-mgmt)
 
 Mirrors are available on
-[Codeberg](https://codeberg.org/wombelix/tpl) and
-[Gitlab](https://gitlab.com/wombelix/tpl).
+[Codeberg](https://codeberg.org/wombelix/k8s-mgmt) and
+[Gitlab](https://gitlab.com/wombelix/k8s-mgmt).
 
 ## Architecture Decision Records
 
