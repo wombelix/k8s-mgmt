@@ -63,10 +63,10 @@ repos:
   #    hooks:
   #    -   id: rstcheck
   # Helm
-  #- repo: https://github.com/gruntwork-io/pre-commit
-  #  rev: v0.1.30
-  #  hooks:
-  #      - id: helmlint
+  - repo: https://github.com/gruntwork-io/pre-commit
+    rev: v0.1.30
+    hooks:
+        - id: helmlint
   # Ruff (Python linter and code formatter)
   #- repo: https://github.com/astral-sh/ruff-pre-commit
   #  # Ruff version.
@@ -78,12 +78,12 @@ repos:
   #    # Run the formatter.
   #    - id: ruff-format
   # Ansible
-  #- hooks:
-  #  - id: ansible-lint
-  #  repo: https://github.com/ansible-community/ansible-lint
-  #  rev: v26.10.1
+  - hooks:
+      - id: ansible-lint
+    repo: https://github.com/ansible-community/ansible-lint
+    rev: v26.10.1
   # GitHub Actions
-  #- repo: https://github.com/rhysd/actionlint
-  #  rev: v1.7.12
-  #  hooks:
-  #    - id: actionlint-docker
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.12
+    hooks:
+      - id: actionlint-docker
