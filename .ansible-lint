@@ -5,6 +5,8 @@
 exclude_paths:
   - .ansible/
   - .cache/
+  - collections/
+  - roles/
   - .github/
   - .golangci.yml
   - .pre-commit-config.yaml
