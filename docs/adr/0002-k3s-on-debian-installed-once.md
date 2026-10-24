@@ -1,0 +1,51 @@
+<!--
+SPDX-FileCopyrightText: 2026 Dominik Wombacher <dominik@wombacher.cc>
+
+SPDX-License-Identifier: CC0-1.0
+-->
+
+# ADR-0002: k3s on Debian, installed once
+
+## Status
+
+Accepted
+
+Date: 2026-10-24
+
+## Context
+
+Each cluster is a single Hetzner Cloud VM. We need a small Kubernetes
+distribution that needs little setup on the OS and can upgrade itself.
+The Kubernetes API must stay reachable if DNS fails.
+
+## Decision
+
+* Debian 13 as the OS.
+* k3s from the official install script `get.k3s.io` with
+  `INSTALL_K3S_CHANNEL=stable`, configured in
+  `/etc/rancher/k3s/config.yaml`.
+* Ansible runs the script only when `/usr/local/bin/k3s` is missing.
+* system-upgrade-controller will own k3s upgrades.
+* `tls-san` lists the host name and the public IPv4 and IPv6 addresses
+  from the Ansible facts.
+
+## Consequences
+
+* A rerun of the playbook never upgrades or restarts k3s.
+* Until system-upgrade-controller is set up, k3s is not upgraded.
+* A change to `config.yaml` restarts k3s through a handler.
+
+## Alternatives Considered
+
+* RHEL family: needs kernel-modules-extra, firewalld off, nm-cloud-setup
+  off and an SELinux policy for k3s.
+* Talos Linux: unattended OS upgrades need talosctl or an extra
+  controller.
+* k3s-ansible collection: third-party, and its version pin and upgrade
+  playbook overlap with system-upgrade-controller.
+* Rerun the install script on every run: k3s would upgrade on unrelated
+  runs, and two tools would own the k3s version.
+
+## Related
+
+* Depends on: [ADR-0003](0003-bootstrap-and-site-playbooks.md)

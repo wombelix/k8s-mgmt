@@ -18,6 +18,17 @@ and what follows from it. For the reasoning behind using them, see
 ## Index of ADRs
 
 - [ADR-0001: Use of Architecture Decision Records](0001-use-of-architecture-decision-records.md)
+- [ADR-0002: k3s on Debian, installed once](0002-k3s-on-debian-installed-once.md)
+- [ADR-0003: Bootstrap and site playbooks](0003-bootstrap-and-site-playbooks.md)
+- [ADR-0004: Admin accounts per SSH key](0004-admin-accounts-per-ssh-key.md)
+- [ADR-0005: Local Ansible collections](0005-local-ansible-collections.md)
+- [ADR-0006: Taskfile as command interface](0006-taskfile-as-command-interface.md)
+- [ADR-0007: OS updates](0007-os-updates.md)
+- [ADR-0008: Cluster bootstrap on the node](0008-cluster-bootstrap-on-the-node.md)
+- [ADR-0009: Flux Operator and FluxInstance bootstrap](0009-flux-operator-and-fluxinstance-bootstrap.md)
+- [ADR-0010: SOPS with age, one key per cluster](0010-sops-with-age-per-cluster.md)
+- [ADR-0011: Age key delivery with task secret](0011-age-key-delivery-with-task-secret.md)
+- [ADR-0012: One inventory host per cluster](0012-one-inventory-host-per-cluster.md)
 
 ## Creating a New ADR
 
