@@ -1,0 +1,14 @@
+# SPDX-FileCopyrightText: 2026 Dominik Wombacher <dominik@wombacher.cc>
+#
+# SPDX-License-Identifier: CC0-1.0
+
+region: eu-central-1
+replica: eu-west-1
+kms: alias/backend-encryption
+upper: true
+format: github-env
+params:
+  - name: /projects/k8s-mgmt/ssh-private-key-openssh
+    env: SSH_PRIVATE_KEY
+  - name: /projects/k8s-mgmt/ssh-public-key-openssh
+    env: SSH_PUBLIC_KEY
