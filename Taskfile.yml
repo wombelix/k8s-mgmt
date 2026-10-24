@@ -24,3 +24,7 @@ tasks:
   site:
     desc: Configure the node as the inventory user
     cmd: ansible-playbook ansible/site.yml {{.CLI_ARGS}}
+
+  kubeconfig:
+    desc: Write the cluster kubeconfig to ~/.kube for local tools
+    cmd: ansible-playbook ansible/kubeconfig.yml {{.CLI_ARGS}}

@@ -2,63 +2,60 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+# Runs on the node, so no kubeconfig leaves it
 ---
 - name: Bootstrap Flux on the cluster
   hosts: all
   gather_facts: false
   become: true
 
-  vars:
-    # CI overrides this with -e kubeconfig_path=<temp file>
-    kubeconfig_path: "{{ lookup('ansible.builtin.env', 'HOME') }}/.kube/{{ inventory_hostname }}.yaml"
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
 
   tasks:
     - name: Wait for the k3s kubeconfig
       ansible.builtin.wait_for:
         path: /etc/rancher/k3s/k3s.yaml
 
-    # The kubeconfig holds the cluster admin key
-    - name: Read the k3s kubeconfig
-      ansible.builtin.slurp:
-        src: /etc/rancher/k3s/k3s.yaml
-      register: k3s_kubeconfig
-      no_log: true
+    - name: Install helm install script dependencies
+      ansible.builtin.apt:
+        name:
+          - curl
+          - openssl
+          - tar
+        state: present
 
-    - name: Write the local kubeconfig
-      ansible.builtin.copy:
-        content: "{{ k3s_kubeconfig.content | b64decode | replace('https://127.0.0.1:6443', 'https://' + inventory_hostname + ':6443') }}"
-        dest: "{{ kubeconfig_path }}"
-        mode: '0600'
-      delegate_to: localhost
-      become: false
-      no_log: true
-      diff: false
+    - name: Download helm install script
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-4
+        dest: /usr/local/bin/get-helm-4.sh
+        owner: root
+        group: root
+        mode: '0755'
+
+    # Install once, only used for the Flux Operator one-shot below
+    - name: Install helm
+      ansible.builtin.command:
+        cmd: /usr/local/bin/get-helm-4.sh
+        creates: /usr/local/bin/helm
 
     - name: Check the Flux Operator release
       ansible.builtin.command:
-        cmd: helm status flux-operator --namespace flux-system
-      environment:
-        KUBECONFIG: "{{ kubeconfig_path }}"
+        cmd: /usr/local/bin/helm status flux-operator --namespace flux-system
       register: flux_operator_release
       changed_when: false
       failed_when: >-
         flux_operator_release.rc != 0
         and 'release: not found' not in flux_operator_release.stderr
-      delegate_to: localhost
-      become: false
 
     # Install once. Flux upgrades the operator from Git afterwards
     - name: Install Flux Operator
       ansible.builtin.command:
         cmd: >-
-          helm install flux-operator
+          /usr/local/bin/helm install flux-operator
           oci://ghcr.io/controlplaneio-fluxcd/charts/flux-operator
           --namespace flux-system
           --create-namespace
-      environment:
-        KUBECONFIG: "{{ kubeconfig_path }}"
       when: flux_operator_release.rc != 0
       changed_when: true
-      delegate_to: localhost
-      become: false
 ...
