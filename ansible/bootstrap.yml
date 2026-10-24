@@ -40,4 +40,10 @@
         mode: '0440'
         validate: visudo -csf %s
       loop: "{{ admin_users }}"
+
+    - name: Upgrade all packages
+      ansible.builtin.apt:
+        update_cache: true
+        upgrade: dist
+        autoremove: true
 ...
