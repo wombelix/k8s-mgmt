@@ -8,6 +8,10 @@
   gather_facts: false
   become: true
 
+  vars:
+    # Only root exists after a rebuild. Play vars win over inventory vars
+    ansible_user: root
+
   tasks:
     - name: Create admin users
       ansible.builtin.user:
