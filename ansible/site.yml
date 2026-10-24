@@ -1,0 +1,35 @@
+# SPDX-FileCopyrightText: 2026 Dominik Wombacher <dominik@wombacher.cc>
+#
+# SPDX-License-Identifier: Apache-2.0
+
+---
+- name: Configure k3s node
+  hosts: all
+  gather_facts: false
+  become: true
+
+  handlers:
+    - name: Reload sshd
+      ansible.builtin.service:
+        name: ssh
+        state: reloaded
+
+  tasks:
+    # Disabling root login during a root run locks out a host without admin users
+    - name: Refuse to run as root
+      ansible.builtin.assert:
+        that: ansible_user != 'root'
+        fail_msg: Run bootstrap.yml first, then site.yml as an admin user.
+
+    - name: Disable root and password login
+      ansible.builtin.copy:
+        content: |
+          PermitRootLogin no
+          PasswordAuthentication no
+        dest: /etc/ssh/sshd_config.d/10-hardening.conf
+        owner: root
+        group: root
+        mode: '0644'
+        validate: /usr/sbin/sshd -t -f %s
+      notify: Reload sshd
+...

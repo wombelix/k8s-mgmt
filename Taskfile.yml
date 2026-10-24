@@ -20,3 +20,7 @@ tasks:
   bootstrap:
     desc: Create the admin users as root, only after a VM rebuild
     cmd: ansible-playbook ansible/bootstrap.yml {{.CLI_ARGS}}
+
+  site:
+    desc: Configure the node as the inventory user
+    cmd: ansible-playbook ansible/site.yml {{.CLI_ARGS}}
