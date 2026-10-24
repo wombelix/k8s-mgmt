@@ -1,0 +1,39 @@
+# SPDX-FileCopyrightText: 2026 Dominik Wombacher <dominik@wombacher.cc>
+#
+# SPDX-License-Identifier: Apache-2.0
+
+---
+- name: Bootstrap k3s node
+  hosts: lab.wombacher.dev
+  gather_facts: false
+  become: true
+
+  tasks:
+    - name: Create admin users
+      ansible.builtin.user:
+        name: "{{ item }}"
+        create_home: true
+        password: '*' # no password, SSH key login only
+        shell: /bin/bash
+        state: present
+      loop: "{{ admin_users }}"
+
+    - name: Set SSH authorized keys
+      ansible.posix.authorized_key:
+        user: "{{ item }}"
+        key: "{{ lookup('file', 'files/' + item + '.pub') }}"
+        exclusive: true
+        manage_dir: true
+        state: present
+      loop: "{{ admin_users }}"
+
+    - name: Grant passwordless sudo
+      ansible.builtin.copy:
+        content: "{{ item }} ALL=(ALL) NOPASSWD: ALL\n"
+        dest: "/etc/sudoers.d/{{ item }}"
+        owner: root
+        group: root
+        mode: '0440'
+        validate: visudo -csf %s
+      loop: "{{ admin_users }}"
+...

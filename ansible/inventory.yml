@@ -1,0 +1,13 @@
+# SPDX-FileCopyrightText: 2026 Dominik Wombacher <dominik@wombacher.cc>
+#
+# SPDX-License-Identifier: Apache-2.0
+
+all:
+  hosts:
+    lab.wombacher.dev:
+      # Manual runs. The pipeline sets -e ansible_user=k8s-mgmt
+      ansible_user: wombelix
+      # One account per SSH key, key file is files/<name>.pub
+      admin_users:
+        - wombelix
+        - k8s-mgmt
