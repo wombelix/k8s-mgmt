@@ -32,14 +32,16 @@ tasks:
   secret:
     desc: Push the sops-age Secret from SSM, after a rebuild or key rotation
     summary: |
-      TARGET is the SSH destination, for example
-      task secret TARGET=lab.wombacher.dev
-      task secret TARGET=k8s-mgmt@lab.wombacher.dev
+      CLUSTER is the inventory host. SSH_USER defaults to wombelix, for example
+      task secret CLUSTER=lab.wombacher.dev
+      task secret CLUSTER=lab.wombacher.dev SSH_USER=k8s-mgmt
     requires:
-      vars: [TARGET]
+      vars: [CLUSTER]
     vars:
+      SSH_USER: '{{.SSH_USER | default "wombelix"}}'
       AWS_REGION: eu-central-1
-      AGE_KEY_PARAM: /projects/k8s-mgmt/age-private-key
+      # One age key per cluster
+      AGE_KEY_PARAM: /projects/k8s-mgmt/{{.CLUSTER}}/age-private-key
       # Run on the node, the key arrives on stdin
       CREATE_SECRET: >-
         sudo k3s kubectl create secret generic sops-age --namespace flux-system
@@ -53,4 +55,4 @@ tasks:
           echo "Could not read {{.AGE_KEY_PARAM}} from SSM" >&2
           exit 1
         fi
-        printf '%s' "$KEY" | ssh {{.TARGET}} '{{.CREATE_SECRET}} | {{.APPLY_SECRET}}'
+        printf '%s' "$KEY" | ssh {{.SSH_USER}}@{{.CLUSTER}} '{{.CREATE_SECRET}} | {{.APPLY_SECRET}}'
