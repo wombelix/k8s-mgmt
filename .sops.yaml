@@ -1,0 +1,9 @@
+# SPDX-FileCopyrightText: 2026 Dominik Wombacher <dominik@wombacher.cc>
+#
+# SPDX-License-Identifier: CC0-1.0
+
+# Recipients: lab.wombacher.dev Flux key, wombelix personal recovery key
+creation_rules:
+  - path_regex: \.sops\.yaml$
+    encrypted_regex: ^(data|stringData)$
+    age: age16s3el494k4fmdughfd4xvert4pek6xlq0xrm6kuua49rhfwsfvuqjea73a,age1lgekd38h9u4qy763xnzxhzlc7zyt4weudta0kh87f38gk05yy4ns0nk3h0
