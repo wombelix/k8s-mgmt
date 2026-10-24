@@ -4,7 +4,7 @@
 
 ---
 - name: Bootstrap k3s node
-  hosts: lab.wombacher.dev
+  hosts: all
   gather_facts: false
   become: true
 
