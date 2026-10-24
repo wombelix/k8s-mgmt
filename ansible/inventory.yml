@@ -7,6 +7,7 @@ all:
     lab.wombacher.dev:
       # Manual runs. The pipeline sets -e ansible_user=k8s-mgmt
       ansible_user: wombelix
+      ansible_python_interpreter: /usr/bin/python3
       # One account per SSH key, key file is files/<name>.pub
       admin_users:
         - wombelix
