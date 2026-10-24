@@ -28,3 +28,29 @@ tasks:
   kubeconfig:
     desc: Write the cluster kubeconfig to ~/.kube for local tools
     cmd: ansible-playbook ansible/kubeconfig.yml {{.CLI_ARGS}}
+
+  secret:
+    desc: Push the sops-age Secret from SSM, after a rebuild or key rotation
+    summary: |
+      TARGET is the SSH destination, for example
+      task secret TARGET=lab.wombacher.dev
+      task secret TARGET=k8s-mgmt@lab.wombacher.dev
+    requires:
+      vars: [TARGET]
+    vars:
+      AWS_REGION: eu-central-1
+      AGE_KEY_PARAM: /projects/k8s-mgmt/age-private-key
+      # Run on the node, the key arrives on stdin
+      CREATE_SECRET: >-
+        sudo k3s kubectl create secret generic sops-age --namespace flux-system
+        --from-file=age.agekey=/dev/stdin --dry-run=client --output yaml
+      APPLY_SECRET: sudo k3s kubectl apply --server-side --filename -
+    cmds:
+      # KEY is not exported, child processes never see it. printf is a shell builtin
+      - |
+        KEY="$(aws ssm get-parameter --region {{.AWS_REGION}} --name {{.AGE_KEY_PARAM}} --with-decryption --query Parameter.Value --output text)"
+        if [ -z "$KEY" ]; then
+          echo "Could not read {{.AGE_KEY_PARAM}} from SSM" >&2
+          exit 1
+        fi
+        printf '%s' "$KEY" | ssh {{.TARGET}} '{{.CREATE_SECRET}} | {{.APPLY_SECRET}}'
