@@ -12,3 +12,8 @@ params:
     env: SSH_PRIVATE_KEY
   - name: /projects/k8s-mgmt/ssh-public-key-openssh
     env: SSH_PUBLIC_KEY
+  # One pair per cluster, see README "Add a cluster"
+  - name: /projects/k8s-mgmt/lab.wombacher.dev/age-private-key
+    env: AGE_PRIVATE_KEY_LAB_WOMBACHER_DEV
+  - name: /projects/k8s-mgmt/lab.wombacher.dev/age-public-key
+    env: AGE_PUBLIC_KEY_LAB_WOMBACHER_DEV
