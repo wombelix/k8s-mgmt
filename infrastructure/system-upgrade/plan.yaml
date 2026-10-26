@@ -1,0 +1,31 @@
+# SPDX-FileCopyrightText: 2026 Dominik Wombacher <dominik@wombacher.cc>
+#
+# SPDX-License-Identifier: Apache-2.0
+
+# Upgrades k3s to the latest stable release
+# https://docs.k3s.io/upgrades/automated
+---
+apiVersion: upgrade.cattle.io/v1
+kind: Plan
+metadata:
+  name: k3s-server
+  namespace: system-upgrade
+spec:
+  concurrency: 1
+  cordon: true
+  nodeSelector:
+    matchExpressions:
+      - key: node-role.kubernetes.io/control-plane
+        operator: In
+        values:
+          - "true"
+  serviceAccountName: system-upgrade
+  channel: https://update.k3s.io/v1-release/channels/stable
+  upgrade:
+    image: rancher/k3s-upgrade
+  # Jobs only start in the window, a running Job may continue after it
+  window:
+    days: ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
+    startTime: "03:00"
+    endTime: "04:00"
+    timeZone: Europe/Berlin
