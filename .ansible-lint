@@ -11,3 +11,6 @@ exclude_paths:
   - .golangci.yml
   - .pre-commit-config.yaml
   - .markdownlint.yaml
+  # Unmodified upstream release assets
+  - infrastructure/system-upgrade/crd.yaml
+  - infrastructure/system-upgrade/system-upgrade-controller.yaml
