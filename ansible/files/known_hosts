@@ -1,0 +1,4 @@
+# Pinned host keys for the pipeline, one line per host.
+# After a rebuild: run ssh-keyscan -t ed25519 <host>, compare the fingerprint
+# with ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub in the Hetzner console.
+lab.wombacher.dev ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL/YSqRzXAyeksFtuwoWAnA1Z1Vwq+jZX60HswVvtTOy

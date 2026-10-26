@@ -1,0 +1,65 @@
+# SPDX-FileCopyrightText: 2026 Dominik Wombacher <dominik@wombacher.cc>
+#
+# SPDX-License-Identifier: CC0-1.0
+
+name: Configure nodes with Ansible
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ansible/**
+      - ansible.cfg
+      - collections/requirements.yml
+      - Taskfile.yml
+      - .github/workflows/ansible.yml
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+# A second run waits for the first one
+concurrency:
+  group: ansible
+  cancel-in-progress: false
+
+# Explicit bash adds pipefail, a failed SSM read stops the pipe
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  configure:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install Task
+        uses: go-task/setup-task@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: arn:aws:iam::992382418145:role/GitHubOIDC-${{ github.event.repository.name }}-ResourceAccess
+          aws-region: eu-central-1
+
+      # Only trust the pinned host keys
+      - name: Pin SSH host keys
+        run: |
+          mkdir -p ~/.ssh
+          cp ansible/files/known_hosts ~/.ssh/known_hosts
+
+      # The key goes from SSM into the agent, never into env or a file
+      - name: Load SSH key into agent
+        run: |
+          eval "$(ssh-agent -a "$RUNNER_TEMP/ssh-agent.sock")"
+          echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> "$GITHUB_ENV"
+          aws ssm get-parameter --name /projects/k8s-mgmt/ssh-private-key-openssh --with-decryption --query Parameter.Value --output text | ssh-add -
+
+      - name: Install Ansible collections
+        run: task deps
+
+      - name: Run site playbook
+        run: task site -- -e ansible_user=k8s-mgmt
