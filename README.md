@@ -9,6 +9,7 @@ SPDX-License-Identifier: Apache-2.0
 <!-- markdownlint-disable MD013 -->
 [![REUSE status](https://api.reuse.software/badge/github.com/wombelix/k8s-mgmt)](https://api.reuse.software/info/github.com/wombelix/k8s-mgmt)
 [![Mirror](https://github.com/wombelix/k8s-mgmt/actions/workflows/mirror.yml/badge.svg)](https://github.com/wombelix/k8s-mgmt/actions/workflows/mirror.yml)
+[![Configure nodes with Ansible](https://github.com/wombelix/k8s-mgmt/actions/workflows/ansible.yml/badge.svg)](https://github.com/wombelix/k8s-mgmt/actions/workflows/ansible.yml)
 <!-- markdownlint-enable MD013 -->
 
 ## Table of Contents
