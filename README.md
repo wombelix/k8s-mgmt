@@ -52,8 +52,13 @@ example `clusters/lab-wombacher-dev/`.
 * `ansible/inventory.yml`: one line per cluster host. Shared settings
   are in `all.vars`.
 * `ansible/files/`: SSH public keys, one file per account.
-* `clusters/<cluster folder>/`: synced by Flux. FluxInstance and the
-  Flux Operator ResourceSet.
+  `known_hosts` holds the host keys the pipeline trusts.
+* `clusters/<cluster folder>/`: synced by Flux. FluxInstance, the
+  Flux Operator ResourceSet and the Kustomization for
+  `infrastructure/system-upgrade/`.
+* `infrastructure/system-upgrade/`: system-upgrade-controller and the
+  k3s upgrade Plan.
+* `.github/workflows/ansible.yml`: runs `task site` on push to `main`.
 * `collections/requirements.yml`: Ansible collections. Installed into
   `collections/`, which Git ignores.
 * `Taskfile.yml`: all commands.
@@ -98,15 +103,17 @@ task site -- --limit lab.wombacher.dev --check --diff
    off.
 2. Set DNS: A and AAAA records for the host, and the reverse DNS of both
    IPs to the host name.
-3. Add the host to `all.hosts` in `ansible/inventory.yml`.
+3. Add the host to `all.hosts` in `ansible/inventory.yml`. Don't push
+   this yet, the pipeline would fail on the new host.
 4. Create an age key for the cluster, see
    [Create an age key](#create-an-age-key).
 5. Add a rule to `.sops.yaml` for `^clusters/<cluster folder>/` with the
    new public key and the recovery key. Copy the existing rule.
 6. Copy an existing cluster folder to `clusters/<cluster folder>/`.
    Change `sync.path` in `flux-instance.yaml` to the new folder.
-7. Commit and push.
-8. Follow [New or rebuilt VM](#new-or-rebuilt-vm).
+7. Commit and push everything except `ansible/inventory.yml`.
+8. Follow [New or rebuilt VM](#new-or-rebuilt-vm). Its last step pushes
+   the inventory.
 
 ### New or rebuilt VM
 
@@ -124,13 +131,19 @@ task site -- --limit lab.wombacher.dev --check --diff
    kubectl -n flux-system get fluxinstance,kustomization,helmrelease
    ```
 
+8. Put the host key in `ansible/files/known_hosts`, see the comment in
+   the file. Commit and push, for a new host together with
+   `ansible/inventory.yml`. The pipeline run should report `changed=0`.
+
+Until step 8, every pipeline run fails on this host.
+
 ### Change a node
 
 1. Edit files in `ansible/`.
 2. Preview with `task site -- --check --diff`.
-3. Apply with `task site`.
+3. Commit and push to `main`. The pipeline runs `task site`.
 
-A second run reports `changed=0`.
+A local `task site` works too. A second run reports `changed=0`.
 
 ### Change a cluster
 
@@ -195,12 +208,26 @@ certificate rotation.
   a running node: `task bootstrap -- -e ansible_user=wombelix`.
 * The pipeline connects with `-e ansible_user=k8s-mgmt`.
 
+### Pipeline
+
+* `.github/workflows/ansible.yml` runs on push to `main` when Ansible
+  files, the Taskfile or the workflow change, and on manual dispatch.
+* It assumes the repo's GitHub OIDC role and pipes the `k8s-mgmt` SSH
+  key from SSM into `ssh-agent`.
+* It trusts only the host keys in `ansible/files/known_hosts`. A changed
+  host key fails the run.
+* `task bootstrap` and `task secret` stay manual.
+
 ### Updates
 
-* Debian: unattended-upgrades runs between 06:00 and 07:00 and reboots
-  at 07:30 if needed.
-* k3s: installed once from the stable channel. Later upgrades come from
-  system-upgrade-controller, which is not set up yet.
+Maintenance runs every night between 03:00 and 07:00 `Europe/Berlin`.
+The node itself runs in UTC.
+
+* k3s: installed once from the stable channel. system-upgrade-controller
+  upgrades it to the latest stable release. Upgrades start between
+  03:00 and 04:00.
+* Debian: unattended-upgrades starts between 04:00 and 04:30 and
+  reboots right after, if needed.
 * Flux: the FluxInstance uses `2.x`, so the operator upgrades Flux.
 * Flux Operator: installed once with helm, then upgraded by the
   ResourceSet `flux-operator.yaml` in the cluster folder.
