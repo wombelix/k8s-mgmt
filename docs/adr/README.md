@@ -29,6 +29,9 @@ and what follows from it. For the reasoning behind using them, see
 - [ADR-0010: SOPS with age, one key per cluster](0010-sops-with-age-per-cluster.md)
 - [ADR-0011: Age key delivery with task secret](0011-age-key-delivery-with-task-secret.md)
 - [ADR-0012: One inventory host per cluster](0012-one-inventory-host-per-cluster.md)
+- [ADR-0013: k3s upgrades with system-upgrade-controller](0013-k3s-upgrades-with-system-upgrade-controller.md)
+- [ADR-0014: Nightly maintenance window](0014-nightly-maintenance-window.md)
+- [ADR-0015: Site playbook in GitHub Actions](0015-site-playbook-in-github-actions.md)
 
 ## Creating a New ADR
 
