@@ -31,7 +31,10 @@ This repo manages single-node k3s clusters on Hetzner Cloud VMs. Each
 host in `ansible/inventory.yml` is one cluster.
 
 * Ansible configures the node, installs k3s and bootstraps Flux.
+  A GitHub Actions pipeline runs it on push to `main`.
 * Flux syncs the cluster's folder in `clusters/` from this repo.
+  The cluster folder also applies `infrastructure/`, for example
+  system-upgrade-controller for k3s upgrades.
 * Secrets are encrypted with SOPS and age and stored in Git. Each cluster
   has its own age key.
 
@@ -63,13 +66,14 @@ example `clusters/lab-wombacher-dev/`.
   `collections/`, which Git ignores.
 * `Taskfile.yml`: all commands.
 * `.sops.yaml`: SOPS recipients, one rule per cluster folder.
-* `.params2env.yaml`: SSM parameters for the pipeline.
+* `.params2env.yaml`: the repo's SSM parameters, for manual
+  troubleshooting with `params2env read`. Prints secrets to stdout.
 
 ## Requirements
 
 * `ansible`, `task` and the `aws` CLI.
-* An AWS login that can read `/projects/k8s-mgmt/` in SSM. Only
-  `task secret` needs it.
+* An AWS login for `/projects/k8s-mgmt/` in SSM. `task secret` reads
+  from it, [Create an age key](#create-an-age-key) writes to it.
 * Your SSH key for the `wombelix` account.
 * Optional: `kubectl`, `sops`, `age`, `params2env`.
 
@@ -107,6 +111,7 @@ task site -- --limit lab.wombacher.dev --check --diff
    this yet, the pipeline would fail on the new host.
 4. Create an age key for the cluster, see
    [Create an age key](#create-an-age-key).
+   Add both of its parameters to `.params2env.yaml`.
 5. Add a rule to `.sops.yaml` for `^clusters/<cluster folder>/` with the
    new public key and the recovery key. Copy the existing rule.
 6. Copy an existing cluster folder to `clusters/<cluster folder>/`.
