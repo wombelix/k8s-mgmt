@@ -19,6 +19,12 @@
         name: k3s
         state: restarted
 
+    - name: Restart apt-daily-upgrade timer
+      ansible.builtin.systemd:
+        name: apt-daily-upgrade.timer
+        state: restarted
+        daemon_reload: true
+
   tasks:
     # Disabling root login during a root run locks out a host without admin users
     - name: Refuse to run as root
@@ -54,12 +60,34 @@
         mode: '0644'
         validate: apt-config -c %s dump
 
-    # apt-daily-upgrade.timer runs between 06:00 and 07:00
+    # Starts between 04:00 and 04:30 Europe/Berlin, after the k3s upgrade window
+    - name: Create apt-daily-upgrade timer drop-in directory
+      ansible.builtin.file:
+        path: /etc/systemd/system/apt-daily-upgrade.timer.d
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Move apt-daily-upgrade into the maintenance window
+      ansible.builtin.copy:
+        content: |
+          [Timer]
+          # Empty value resets the packaged 06:00 schedule
+          OnCalendar=
+          OnCalendar=*-*-* 04:00 Europe/Berlin
+          RandomizedDelaySec=30m
+        dest: /etc/systemd/system/apt-daily-upgrade.timer.d/override.conf
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Restart apt-daily-upgrade timer
+
     - name: Reboot after upgrades when needed
       ansible.builtin.copy:
         content: |
           Unattended-Upgrade::Automatic-Reboot "true";
-          Unattended-Upgrade::Automatic-Reboot-Time "07:30";
+          Unattended-Upgrade::Automatic-Reboot-Time "now";
         dest: /etc/apt/apt.conf.d/52unattended-upgrades-local
         owner: root
         group: root
