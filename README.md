@@ -57,10 +57,13 @@ example `clusters/lab-wombacher-dev/`.
 * `ansible/files/`: SSH public keys, one file per account.
   `known_hosts` holds the host keys the pipeline trusts.
 * `clusters/<cluster folder>/`: synced by Flux. FluxInstance, the
-  Flux Operator ResourceSet and the Kustomization for
-  `infrastructure/system-upgrade/`.
+  Flux Operator ResourceSet and the Kustomizations for the folders in
+  `infrastructure/`.
 * `infrastructure/system-upgrade/`: system-upgrade-controller and the
   k3s upgrade Plan.
+* `infrastructure/cert-manager/`: cert-manager from its Helm chart.
+* `infrastructure/cert-manager-issuers/`: Let's Encrypt staging and
+  production ClusterIssuers. Applied after cert-manager is ready.
 * `.github/workflows/ansible.yml`: runs `task site` on push to `main`.
 * `collections/requirements.yml`: Ansible collections. Installed into
   `collections/`, which Git ignores.
@@ -249,6 +252,8 @@ The node itself runs in UTC.
 * Flux: the FluxInstance uses `2.x`, so the operator upgrades Flux.
 * Flux Operator: installed once with helm, then upgraded by the
   ResourceSet `flux-operator.yaml` in the cluster folder.
+* cert-manager: the OCIRepository uses `1.x`, so Flux upgrades it to
+  every new 1.x release.
 
 ### Kubernetes API
 
@@ -265,6 +270,28 @@ The node itself runs in UTC.
   pods is NATed to the node address.
 * The bundled Traefik is the default IngressClass `traefik`. It listens
   on ports 80 and 443 of both node addresses.
+
+### Certificates
+
+* cert-manager issues certificates from Let's Encrypt with HTTP-01
+  through Traefik.
+* Two ClusterIssuers: `letsencrypt-staging` and
+  `letsencrypt-production`. Staging certificates are not trusted by
+  browsers, but staging has much higher rate limits.
+* Apps start with staging. Once an app is ready for real use, switch its
+  Ingress to production:
+
+  ```yaml
+  metadata:
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-staging
+  ```
+
+* Check a certificate with
+  `kubectl -n <namespace> get certificate`. `READY True` means it was
+  issued.
+* The cert-manager CRDs stay installed if cert-manager is removed.
+  Deleting them would delete every Certificate.
 
 ### Secrets
 
