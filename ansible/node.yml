@@ -110,6 +110,11 @@
             - "{{ inventory_hostname }}"
             - "{{ ansible_facts['default_ipv4']['address'] }}"
             - "{{ ansible_facts['default_ipv6']['address'] }}"
+          # Dual-stack only works on a new cluster, an existing one needs a rebuild
+          cluster-cidr: "10.42.0.0/16,fd61:4655:2980::/56"
+          service-cidr: "10.43.0.0/16,fd61:4655:2980:100::/112"
+          # ULA ranges are not routed, pods need NAT for outgoing IPv6
+          flannel-ipv6-masq: true
         dest: /etc/rancher/k3s/config.yaml
         owner: root
         group: root
