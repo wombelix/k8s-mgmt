@@ -32,6 +32,7 @@ and what follows from it. For the reasoning behind using them, see
 - [ADR-0013: k3s upgrades with system-upgrade-controller](0013-k3s-upgrades-with-system-upgrade-controller.md)
 - [ADR-0014: Nightly maintenance window](0014-nightly-maintenance-window.md)
 - [ADR-0015: Site playbook in GitHub Actions](0015-site-playbook-in-github-actions.md)
+- [ADR-0016: Dual-stack k3s](0016-dual-stack-k3s.md)
 
 ## Writing an ADR
 
