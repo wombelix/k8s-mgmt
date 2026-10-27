@@ -65,6 +65,9 @@ example `clusters/lab-wombacher-dev/`.
 * `infrastructure/cert-manager-issuers/`: Let's Encrypt staging and
   production ClusterIssuers. Applied after cert-manager is ready.
 * `.github/workflows/ansible.yml`: runs `task site` on push to `main`.
+* `.github/workflows/pre-commit.yml`: runs pre-commit on the files a
+  pull request changes.
+* `renovate.json5`: Renovate config for dependency update pull requests.
 * `collections/requirements.yml`: Ansible collections. Installed into
   `collections/`, which Git ignores.
 * `Taskfile.yml`: all commands.
@@ -238,6 +241,9 @@ certificate rotation.
 * It trusts only the host keys in `ansible/files/known_hosts`. A changed
   host key fails the run.
 * `task bootstrap` and `task secret` stay manual.
+* `.github/workflows/pre-commit.yml` runs on every pull request. It uses
+  the pre-commit action from `wombelix/build-helper-scripts` and only
+  checks the changed files.
 
 ### Updates
 
@@ -254,6 +260,11 @@ The node itself runs in UTC.
   ResourceSet `flux-operator.yaml` in the cluster folder.
 * cert-manager: the OCIRepository uses `1.x`, so Flux upgrades it to
   every new 1.x release.
+* Renovate opens pull requests for GitHub Actions, pre-commit hooks,
+  Ansible collections and the system-upgrade-controller release.
+  Minor and patch updates merge on their own once the pre-commit check
+  passes. Major updates wait for review. Open items are listed in the
+  Dependency Dashboard issue.
 
 ### Kubernetes API
 

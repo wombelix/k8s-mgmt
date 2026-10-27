@@ -35,6 +35,7 @@ and what follows from it. For the reasoning behind using them, see
 - [ADR-0016: Dual-stack k3s](0016-dual-stack-k3s.md)
 - [ADR-0017: cert-manager with Let's Encrypt](0017-cert-manager-with-lets-encrypt.md)
 - [ADR-0018: system-upgrade-controller by release URL](0018-system-upgrade-controller-by-release-url.md)
+- [ADR-0019: Dependency updates with Renovate](0019-dependency-updates-with-renovate.md)
 
 ## Writing an ADR
 
