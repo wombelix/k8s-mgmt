@@ -14,8 +14,8 @@ Date: 2026-10-25
 
 ## Context
 
-Flux needs the cluster's age private key as the `sops-age` Secret. It is
-the only secret that is not in Git. It must get from SSM to the cluster
+Flux needs the cluster's age private key as a Secret. It is the only
+secret that is not in Git. It must get from SSM to the cluster
 without being written to disk or exposed to other processes.
 
 Through Ansible, the age key would be in an environment variable, in play
@@ -24,15 +24,15 @@ node.
 
 ## Decision
 
-`task secret CLUSTER=<host>`:
+`task secret`:
 
-1. Reads the age key with `aws ssm get-parameter` into an unexported shell
-   variable. It stops if the read fails or returns nothing.
-2. Pipes it with the `printf` builtin over SSH into
-   `k3s kubectl create secret --from-file=age.agekey=/dev/stdin`, piped
-   into `k3s kubectl apply --server-side`.
+1. Reads the age key with the AWS CLI into an unexported shell variable.
+   It stops if the read fails or returns nothing.
+2. Pipes it with a shell builtin over SSH into `k3s kubectl` on the
+   node, which creates or updates the Secret from stdin.
 
-`SSH_USER` defaults to `wombelix`. The pipeline sets `k8s-mgmt`.
+It connects with the account for manual runs by default. The pipeline
+can pass its own account.
 
 ## Consequences
 

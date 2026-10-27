@@ -22,7 +22,7 @@ should not need changes to the playbooks or the Taskfile.
 * Each host in `ansible/inventory.yml` is one single-node cluster.
   Shared settings are in `all.vars`.
 * The cluster folder is the host name with dashes instead of dots, for
-  example `clusters/lab-wombacher-dev/` for `lab.wombacher.dev`.
+  example `clusters/k8s-example-com/` for `k8s.example.com`.
   `cluster.yml` derives it from `inventory_hostname`.
 * Each cluster folder has its own `flux-instance.yaml` with its own
   `sync.path`.

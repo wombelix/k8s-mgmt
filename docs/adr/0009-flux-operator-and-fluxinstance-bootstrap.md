@@ -21,16 +21,14 @@ Any tool that keeps changing them would conflict with Flux.
 
 ## Decision
 
-* `cluster.yml` runs `helm install flux-operator` from
-  `oci://ghcr.io/controlplaneio-fluxcd/charts/flux-operator` only when
-  `helm status` reports `release: not found`.
-* A ResourceSet in `clusters/<cluster folder>/flux-operator.yaml` takes
-  over the release with an OCIRepository and a HelmRelease, chart
-  version `*`.
-* `cluster.yml` applies `flux-instance.yaml` only when the FluxInstance
-  is missing. Flux then syncs the same file from Git.
-* The FluxInstance uses `distribution.version: "2.x"` and syncs the
-  cluster folder from this public repo over HTTPS.
+* `cluster.yml` installs Flux Operator with helm from the upstream OCI
+  chart, only when the release is missing.
+* A ResourceSet in the cluster folder takes over the release with an
+  OCIRepository and a HelmRelease that follow every new chart version.
+* `cluster.yml` applies the FluxInstance only when it is missing. Flux
+  then syncs the same file from Git.
+* The FluxInstance follows every release of the current Flux major
+  version and syncs the cluster folder from this public repo over HTTPS.
 * Ansible uses the helm and kubectl CLIs, not `kubernetes.core`.
 
 ## Consequences

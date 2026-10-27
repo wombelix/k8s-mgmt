@@ -15,11 +15,11 @@ Date: 2026-10-26
 ## Context
 
 `task site` ran only from a local machine. The playbooks are idempotent,
-so a pipeline can run them after each change. ADR-0004 reserves the
-`k8s-mgmt` account and its SSH key for the pipeline.
+so a pipeline can run them after each change. ADR-0004 reserves an
+account and its SSH key for the pipeline.
 
 The SSH private key is in SSM. The repo's GitHub OIDC role can read it,
-and only `refs/heads/main` can assume that role. The shared
+and only the `main` branch can assume that role. The shared
 `load-ssm-secrets` action writes values to `GITHUB_ENV`, so every later
 step would see the SSH key.
 
@@ -29,12 +29,12 @@ The workflow `.github/workflows/ansible.yml`:
 
 * Runs on push to `main` when Ansible files, the Taskfile or the workflow
   change, and on manual dispatch. One run at a time.
-* Assumes `GitHubOIDC-<repo>-ResourceAccess` with
+* Assumes the repo's OIDC role with
   `aws-actions/configure-aws-credentials`.
-* Pipes the SSH key from `aws ssm get-parameter` into `ssh-add -`. Only
-  the agent socket path goes into `GITHUB_ENV`.
-* Trusts only the host keys in `ansible/files/known_hosts`.
-* Runs `task deps` and `task site -- -e ansible_user=k8s-mgmt`, with Task
+* Pipes the SSH key from the AWS CLI into `ssh-agent`. Only the agent
+  socket path goes into `GITHUB_ENV`.
+* Trusts only the host keys pinned in `ansible/files/known_hosts`.
+* Runs `task deps` and `task site` as the pipeline account, with Task
   from `go-task/setup-task`.
 
 ## Consequences
@@ -44,7 +44,7 @@ The workflow `.github/workflows/ansible.yml`:
   variable.
 * After a rebuild, the run fails until `known_hosts` has the new host
   key. An unexpected host key change also fails the run.
-* A new host must exist and have the `k8s-mgmt` account before its
+* A new host must exist and have the pipeline account before its
   inventory entry is pushed.
 * `task bootstrap` and `task secret` stay manual.
 

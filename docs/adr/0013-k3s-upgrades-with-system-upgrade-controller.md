@@ -26,22 +26,20 @@ release tag.
 
 ## Decision
 
-* `infrastructure/system-upgrade/` holds both release files unmodified,
-  from v0.20.2, plus a Plan.
-* The Flux Kustomization `system-upgrade` in the cluster folder applies
-  that folder.
-* The Plan `k3s-server` follows the k3s docs example. It upgrades to the
-  latest release in the stable channel, with `concurrency: 1` and
-  `cordon: true`. There is no agent Plan, since each cluster has one
-  node.
-* The Plan has a window from 03:00 to 04:00 `Europe/Berlin`, every day.
+* `infrastructure/system-upgrade/` holds both files of one release
+  unmodified, plus a Plan.
+* A Flux Kustomization in the cluster folder applies that folder.
+* The Plan follows the k3s docs example for server nodes and upgrades to
+  the latest release in the stable channel. There is no agent Plan,
+  since each cluster has one node.
+* The Plan has a daily time window, so upgrades only start at night.
 
 ## Consequences
 
 * k3s follows the stable channel without a person.
 * An upgrade Job only starts in the window. A Job that started may run
-  past 04:00.
-* The controller version stays at v0.20.2 until someone replaces the two
+  past its end.
+* The controller version stays the same until someone replaces the two
   files.
 * ansible-lint skips the two upstream files.
 

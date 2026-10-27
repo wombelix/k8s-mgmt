@@ -33,6 +33,19 @@ and what follows from it. For the reasoning behind using them, see
 - [ADR-0014: Nightly maintenance window](0014-nightly-maintenance-window.md)
 - [ADR-0015: Site playbook in GitHub Actions](0015-site-playbook-in-github-actions.md)
 
+## Writing an ADR
+
+- One decision per ADR.
+- Write it for the project as a whole, not for one instance, host or
+  environment. Real names and examples belong in the README.
+- Record the decision, its reasons, the chosen tools and approaches, and
+  policies such as "latest stable release".
+- Leave out implementation details: versions, IP ranges, times, exact
+  config lines and commands. They change with the code. Name the file
+  that holds them instead.
+- Accepted ADRs are not edited. A new ADR supersedes or amends an old
+  one.
+
 ## Creating a New ADR
 
 1. Copy the [template](template.md) to a new file named `NNNN-title-with-hyphens.md`

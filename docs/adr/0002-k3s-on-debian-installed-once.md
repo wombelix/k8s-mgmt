@@ -20,20 +20,19 @@ The Kubernetes API must stay reachable if DNS fails.
 
 ## Decision
 
-* Debian 13 as the OS.
-* k3s from the official install script `get.k3s.io` with
-  `INSTALL_K3S_CHANNEL=stable`, configured in
-  `/etc/rancher/k3s/config.yaml`.
-* Ansible runs the script only when `/usr/local/bin/k3s` is missing.
+* The latest stable Debian release as the OS.
+* k3s from the official install script on the stable channel,
+  configured with the k3s config file.
+* Ansible runs the script only when k3s is missing.
 * system-upgrade-controller will own k3s upgrades.
-* `tls-san` lists the host name and the public IPv4 and IPv6 addresses
-  from the Ansible facts.
+* The API server certificate covers the host name and the node's public
+  IPv4 and IPv6 addresses, taken from the Ansible facts.
 
 ## Consequences
 
 * A rerun of the playbook never upgrades or restarts k3s.
 * Until system-upgrade-controller is set up, k3s is not upgraded.
-* A change to `config.yaml` restarts k3s through a handler.
+* A change to the k3s config file restarts k3s through a handler.
 
 ## Alternatives Considered
 

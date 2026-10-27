@@ -23,9 +23,9 @@ with one playbook run.
 ## Decision
 
 * `ansible/cluster.yml` runs helm and `k3s kubectl` on the node with
-  `KUBECONFIG=/etc/rancher/k3s/k3s.yaml`.
+  the node's admin kubeconfig.
 * helm is installed once with the upstream `get-helm-4` script, which
-  checks the sha256 sum. Debian 13 has no helm package.
+  checks the sha256 sum. Debian has no helm package.
 * `ansible/kubeconfig.yml` copies the kubeconfig to your machine for
   local tools. `site.yml` does not import it. The cluster, context and
   user use the host name.

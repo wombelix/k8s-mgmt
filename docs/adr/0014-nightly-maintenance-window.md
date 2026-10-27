@@ -14,13 +14,13 @@ Date: 2026-10-26
 
 ## Context
 
-The cluster must be available until at least 03:00 and again from 07:00,
-in local time `Europe/Berlin`. k3s upgrades, OS upgrades and reboots must
-all finish in between.
+Clusters must be available from early morning until late at night, in
+the operator's local time. k3s upgrades, OS upgrades and reboots must
+all finish in a nightly window.
 
-The node runs in UTC. The Debian apt timer starts at 06:00 UTC, and
-ADR-0007 reboots at 07:30 UTC. That is 07:00 to 08:30 in winter and one
-hour later in summer.
+Nodes run in UTC. The Debian apt timer starts in a fixed UTC slot, and
+ADR-0007 reboots at a fixed UTC time. Both fall into the morning in
+local time.
 
 `Automatic-Reboot-Time` passes `HH:MM` to `shutdown -r`, which uses the
 node's time zone. A fixed time moves by one hour at each DST change.
@@ -28,31 +28,29 @@ systemd timers accept an IANA time zone after the time and follow DST.
 
 ## Decision
 
-All times in `Europe/Berlin`:
+One nightly window in the operator's local time, in this order:
 
-1. 03:00 to 04:00: k3s upgrade Jobs may start (ADR-0013).
-2. 04:00 to 04:30: `apt-daily-upgrade.timer` starts unattended-upgrade.
-   A drop-in sets `OnCalendar=*-*-* 04:00 Europe/Berlin` and
-   `RandomizedDelaySec=30m`.
-3. Right after the upgrade: reboot if needed, with
-   `Automatic-Reboot-Time "now"`.
+1. k3s upgrade Jobs may start (ADR-0013).
+2. After that slot, a drop-in for `apt-daily-upgrade.timer` starts
+   unattended-upgrade, with the time zone in the timer.
+3. Right after the upgrade: reboot if needed.
 
-The node's time zone stays UTC.
+Nodes keep UTC. The times and the time zone are in `ansible/node.yml`
+and the k3s Plan.
 
 ## Consequences
 
-* Maintenance usually ends before 05:00 and leaves two hours of buffer
-  before 07:00.
+* Maintenance usually ends well before the window closes.
 * k3s and the OS upgrade one after the other, not at the same time.
 * The schedule follows DST without changes.
-* Log timestamps on the node stay in UTC.
+* Log timestamps on the nodes stay in UTC.
 
 ## Alternatives Considered
 
-* Node time zone `Europe/Berlin`: changes all log timestamps, and the
-  timer still needs an override to start at 04:00.
+* Node time zone set to local time: changes all log timestamps, and the
+  timer still needs an override.
 * Fixed reboot time in UTC: moves by one hour at each DST change.
-* OS upgrade before k3s: same result, but the k3s window would start
+* OS upgrade before k3s: same result, but the k3s slot would start
   earlier or end later.
 
 ## Related

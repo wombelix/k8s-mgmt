@@ -21,14 +21,13 @@ cluster. Re-keying files must still work if AWS or SSM is not available.
 ## Decision
 
 * SOPS with age.
-* Each cluster has its own age key. The private key is in SSM at
-  `/projects/k8s-mgmt/<host>/age-private-key`, the public key at
-  `.../age-public-key`.
-* `.sops.yaml` has one rule per cluster folder. It encrypts `data` and
-  `stringData` in `*.sops.yaml` files for the cluster key and a personal
+* Each cluster has its own age key. The private and public key are in
+  SSM under the repo's parameter path, one path per cluster.
+* `.sops.yaml` has one rule per cluster folder. It encrypts only the
+  secret values in SOPS files, for the cluster key and a personal
   recovery key, kept outside AWS.
-* The FluxInstance patches its Kustomization with SOPS decryption from
-  the `sops-age` Secret.
+* The FluxInstance patches its Kustomizations with SOPS decryption from
+  a Secret that holds the cluster key.
 
 ## Consequences
 

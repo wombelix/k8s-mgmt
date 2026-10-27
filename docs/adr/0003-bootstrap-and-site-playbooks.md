@@ -38,7 +38,7 @@ entry point, not a manual order of many runs.
 * After a rebuild: `task bootstrap`, then `task site`. Later only
   `task site`.
 * Once root login is off, `task bootstrap` fails at connect and changes
-  nothing. Its tasks can still run with `-e ansible_user=wombelix`.
+  nothing. Its tasks can still run as an admin user.
 * `bootstrap.yml` cannot be imported into `site.yml`.
 
 ## Alternatives Considered
