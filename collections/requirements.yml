@@ -3,6 +3,5 @@
 # SPDX-License-Identifier: Apache-2.0
 
 collections:
-  - name: https://github.com/ansible-collections/ansible.posix.git
-    type: git
+  - name: ansible.posix
     version: 2.2.2
