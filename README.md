@@ -123,24 +123,33 @@ task site -- --limit lab.wombacher.dev --check --diff
 ### New or rebuilt VM
 
 1. Rebuild the VM with a Debian 13 image, in the Hetzner console or with
-   `hcloud server rebuild`. Skip this for a new VM.
-2. `task deps`
-3. `task bootstrap -- --limit lab.wombacher.dev`
-4. `task site -- --limit lab.wombacher.dev`
-5. `task secret CLUSTER=lab.wombacher.dev`
-6. `task kubeconfig -- --limit lab.wombacher.dev`
-7. Check Flux. All objects should show `READY True`:
+   `hcloud server rebuild`. Skip this for a new VM. The rebuild keeps
+   the root SSH key.
+2. Remove the old host key with `ssh-keygen -R lab.wombacher.dev`. On
+   the first connect, compare the fingerprint with
+   `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub` in the Hetzner
+   console.
+3. `task deps`
+4. `task bootstrap -- --limit lab.wombacher.dev`
+5. `task site -- --limit lab.wombacher.dev`
+6. `task secret CLUSTER=lab.wombacher.dev`
+7. `task kubeconfig -- --limit lab.wombacher.dev`
+8. Trigger Flux. Its first run failed without the `sops-age` Secret and
+   would retry only after 10 minutes. Then check that all objects show
+   `READY True`:
 
    ```sh
    export KUBECONFIG=~/.kube/lab.wombacher.dev.yaml
+   kubectl -n flux-system annotate --overwrite kustomization flux-system \
+     reconcile.fluxcd.io/requestedAt="$(date +%s)"
    kubectl -n flux-system get fluxinstance,kustomization,helmrelease
    ```
 
-8. Put the host key in `ansible/files/known_hosts`, see the comment in
+9. Put the host key in `ansible/files/known_hosts`, see the comment in
    the file. Commit and push, for a new host together with
    `ansible/inventory.yml`. The pipeline run should report `changed=0`.
 
-Until step 8, every pipeline run fails on this host.
+Until step 9, every pipeline run fails on this host.
 
 ### Change a node
 
@@ -149,6 +158,10 @@ Until step 8, every pipeline run fails on this host.
 3. Commit and push to `main`. The pipeline runs `task site`.
 
 A local `task site` works too. A second run reports `changed=0`.
+
+Changes to `cluster-cidr` or `service-cidr` only work on a new cluster.
+Don't push them before a rebuild, run `task site` from the local change
+during [New or rebuilt VM](#new-or-rebuilt-vm).
 
 ### Change a cluster
 
@@ -243,6 +256,15 @@ The node itself runs in UTC.
   and IPv6 addresses.
 * `ansible/cluster.yml` runs helm and `k3s kubectl` on the node, so no
   kubeconfig leaves the node during a run.
+
+### Networking
+
+* Dual-stack, IPv4 is the primary family.
+* Pods use `10.42.0.0/16` and `fd61:4655:2980::/56`, services use
+  `10.43.0.0/16` and `fd61:4655:2980:100::/112`. Outgoing IPv6 from
+  pods is NATed to the node address.
+* The bundled Traefik is the default IngressClass `traefik`. It listens
+  on ports 80 and 443 of both node addresses.
 
 ### Secrets
 
