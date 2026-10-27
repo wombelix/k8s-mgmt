@@ -12,4 +12,13 @@ permissions:
 
 jobs:
   pre-commit:
-    uses: wombelix/build-helper-scripts/.github/workflows/pre-commit.yml@main
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          # Both ends of the pull request are needed for the diff
+          fetch-depth: 0
+
+      - name: Run pre-commit on changed files
+        uses: wombelix/build-helper-scripts/.github/actions/pre-commit@main
