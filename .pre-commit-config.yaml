@@ -82,6 +82,8 @@ repos:
   # Ansible
   - hooks:
       - id: ansible-lint
+        # Upstream pins python3.14, runners may have an older python3
+        language_version: python3
     repo: https://github.com/ansible-community/ansible-lint
     rev: v26.10.1
   # GitHub Actions
