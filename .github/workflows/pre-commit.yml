@@ -1,0 +1,15 @@
+# SPDX-FileCopyrightText: 2026 Dominik Wombacher <dominik@wombacher.cc>
+#
+# SPDX-License-Identifier: CC0-1.0
+
+name: pre-commit
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  pre-commit:
+    uses: wombelix/build-helper-scripts/.github/workflows/pre-commit.yml@main
