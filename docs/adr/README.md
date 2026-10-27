@@ -33,6 +33,7 @@ and what follows from it. For the reasoning behind using them, see
 - [ADR-0014: Nightly maintenance window](0014-nightly-maintenance-window.md)
 - [ADR-0015: Site playbook in GitHub Actions](0015-site-playbook-in-github-actions.md)
 - [ADR-0016: Dual-stack k3s](0016-dual-stack-k3s.md)
+- [ADR-0017: cert-manager with Let's Encrypt](0017-cert-manager-with-lets-encrypt.md)
 
 ## Writing an ADR
 
