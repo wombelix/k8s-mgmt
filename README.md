@@ -140,7 +140,25 @@ task site -- --limit lab.wombacher.dev --check --diff
 5. `task site -- --limit lab.wombacher.dev`
 6. `task secret CLUSTER=lab.wombacher.dev`
 7. `task kubeconfig -- --limit lab.wombacher.dev`
-8. Trigger Flux. Its first run failed without the `sops-age` Secret and
+8. Publish the new service account key. A rebuild creates a new signing
+   key, and AWS rejects pod tokens until the new JWKS is published. Run
+   in your domain-mgmt clone, then push to `main`:
+
+   ```sh
+   export KUBECONFIG=~/.kube/lab.wombacher.dev.yaml
+   J=static/oidc.wombacher.dev/lab-wombacher-dev/openid/v1/jwks
+   echo "$(kubectl get --raw /openid/v1/jwks)" > "$J"
+   git add "$J" && git commit -s -m "feat(workers): update 'lab.wombacher.dev' JWKS after rebuild"
+   ```
+
+   After the domain-mgmt pipeline ran, both commands print the same:
+
+   ```sh
+   curl -s https://oidc.wombacher.dev/lab-wombacher-dev/openid/v1/jwks
+   kubectl get --raw /openid/v1/jwks
+   ```
+
+9. Trigger Flux. Its first run failed without the `sops-age` Secret and
    would retry only after 10 minutes. Then check that all objects show
    `READY True`:
 
@@ -151,11 +169,11 @@ task site -- --limit lab.wombacher.dev --check --diff
    kubectl -n flux-system get fluxinstance,kustomization,helmrelease
    ```
 
-9. Put the host key in `ansible/files/known_hosts`, see the comment in
-   the file. Commit and push, for a new host together with
-   `ansible/inventory.yml`. The pipeline run should report `changed=0`.
+10. Put the host key in `ansible/files/known_hosts`, see the comment in
+    the file. Commit and push, for a new host together with
+    `ansible/inventory.yml`. The pipeline run should report `changed=0`.
 
-Until step 9, every pipeline run fails on this host.
+Until step 10, every pipeline run fails on this host.
 
 ### Change a node
 
