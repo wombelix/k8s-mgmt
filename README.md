@@ -27,7 +27,7 @@ SPDX-License-Identifier: Apache-2.0
 
 ## Overview
 
-This repo manages Kubernetes clusters.
+Bootstrap and management of my k8s clusters.
 
 * Ansible configures the node, installs k3s and bootstraps Flux.
   A GitHub Actions pipeline runs it on push to `main`.
