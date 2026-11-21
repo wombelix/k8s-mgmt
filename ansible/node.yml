@@ -135,6 +135,40 @@
         mode: '0600'
       notify: Restart k3s
 
+    # Reads, Lease renewals and Events are controller noise, everything else at Metadata level without bodies
+    - name: Write API server audit policy
+      ansible.builtin.copy:
+        content: |
+          apiVersion: audit.k8s.io/v1
+          kind: Policy
+          omitStages:
+            - RequestReceived
+          rules:
+            - level: None
+              verbs: ["get", "list", "watch"]
+            - level: None
+              resources:
+                - group: coordination.k8s.io
+                  resources: ["leases"]
+            - level: None
+              resources:
+                - group: ""
+                  resources: ["events"]
+            - level: Metadata
+        dest: /etc/rancher/k3s/audit.yaml
+        owner: root
+        group: root
+        mode: '0600'
+      notify: Restart k3s
+
+    - name: Create API server audit log directory
+      ansible.builtin.file:
+        path: /var/log/k3s-audit
+        state: directory
+        owner: root
+        group: root
+        mode: '0700'
+
     # Public IPs as fallback if DNS fails
     - name: Write k3s config
       ansible.builtin.copy:
@@ -153,6 +187,12 @@
             - "service-account-issuer-={{ oidc_issuer }}"
             - "service-account-jwks-uri={{ oidc_issuer }}/openid/v1/jwks"
             - "admission-control-config-file=/etc/rancher/k3s/psa.yaml"
+            # About 1.1 GB at most: 10 rotated files of 100 MB plus the current one
+            - "audit-policy-file=/etc/rancher/k3s/audit.yaml"
+            - "audit-log-path=/var/log/k3s-audit/audit.log"
+            - "audit-log-maxage=30"
+            - "audit-log-maxbackup=10"
+            - "audit-log-maxsize=100"
         dest: /etc/rancher/k3s/config.yaml
         owner: root
         group: root
