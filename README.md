@@ -273,8 +273,11 @@ The node itself runs in UTC.
 * k3s: installed once from the stable channel. system-upgrade-controller
   upgrades it to the latest stable release. Upgrades start between
   03:00 and 04:00.
-* Debian: unattended-upgrades starts between 04:00 and 04:30 and
-  reboots right after, if needed.
+* Debian: package lists refresh between 03:30 and 03:45.
+  unattended-upgrades starts between 04:00 and 04:30 and installs all
+  updates from the main archive, `-updates` and `-security`. It reboots
+  right after, if needed. Major Debian releases stay manual, for example
+  with a VM rebuild.
 * Flux: the FluxInstance uses `2.x`, so the operator upgrades Flux.
 * Flux Operator: installed once with helm, then upgraded by the
   ResourceSet `flux-operator.yaml` in the cluster folder.

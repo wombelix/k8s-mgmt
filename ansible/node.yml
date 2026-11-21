@@ -29,6 +29,12 @@
         state: restarted
         daemon_reload: true
 
+    - name: Restart apt-daily timer
+      ansible.builtin.systemd:
+        name: apt-daily.timer
+        state: restarted
+        daemon_reload: true
+
   tasks:
     # Disabling root login during a root run locks out a host without admin users
     - name: Refuse to run as root
@@ -63,6 +69,42 @@
         group: root
         mode: '0644'
         validate: apt-config -c %s dump
+
+    # Debian allows the main archive and security, this adds fixes released between point releases
+    - name: Allow the -updates suite in unattended-upgrades
+      ansible.builtin.copy:
+        content: |
+          Unattended-Upgrade::Origins-Pattern {
+            "origin=Debian,codename=${distro_codename}-updates";
+          };
+        dest: /etc/apt/apt.conf.d/51unattended-upgrades-updates
+        owner: root
+        group: root
+        mode: '0644'
+        validate: apt-config -c %s dump
+
+    # Package lists refresh at 03:30 Europe/Berlin, right before the upgrade at 04:00
+    - name: Create apt-daily timer drop-in directory
+      ansible.builtin.file:
+        path: /etc/systemd/system/apt-daily.timer.d
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Refresh package lists before the upgrade
+      ansible.builtin.copy:
+        content: |
+          [Timer]
+          # Empty value resets the packaged twice daily schedule
+          OnCalendar=
+          OnCalendar=*-*-* 03:30 Europe/Berlin
+          RandomizedDelaySec=15m
+        dest: /etc/systemd/system/apt-daily.timer.d/override.conf
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Restart apt-daily timer
 
     # Starts between 04:00 and 04:30 Europe/Berlin, after the k3s upgrade window
     - name: Create apt-daily-upgrade timer drop-in directory
