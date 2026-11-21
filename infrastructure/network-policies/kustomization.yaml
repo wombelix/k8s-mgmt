@@ -1,0 +1,11 @@
+# SPDX-FileCopyrightText: 2026 Dominik Wombacher <dominik@wombacher.cc>
+#
+# SPDX-License-Identifier: Apache-2.0
+
+# Policies for namespaces that k3s creates, other namespaces keep theirs next to their resources
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - kube-system.yaml
+  - default.yaml
