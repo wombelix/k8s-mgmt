@@ -36,6 +36,8 @@ and what follows from it. For the reasoning behind using them, see
 - [ADR-0017: cert-manager with Let's Encrypt](0017-cert-manager-with-lets-encrypt.md)
 - [ADR-0018: system-upgrade-controller by release URL](0018-system-upgrade-controller-by-release-url.md)
 - [ADR-0019: Dependency updates with Renovate](0019-dependency-updates-with-renovate.md)
+- [ADR-0020: Public service account issuer](0020-public-service-account-issuer.md)
+- [ADR-0021: AWS IAM roles for pods with amazon-eks-pod-identity-webhook](0021-aws-iam-roles-for-pods-with-pod-identity-webhook.md)
 
 ## Writing an ADR
 
