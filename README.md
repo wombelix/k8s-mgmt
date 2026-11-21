@@ -64,6 +64,8 @@ example `clusters/lab-wombacher-dev/`.
 * `infrastructure/cert-manager/`: cert-manager from its Helm chart.
 * `infrastructure/cert-manager-issuers/`: Let's Encrypt staging and
   production ClusterIssuers. Applied after cert-manager is ready.
+* `infrastructure/pod-identity-webhook/`: amazon-eks-pod-identity-webhook
+  for AWS IAM roles for pods.
 * `.github/workflows/ansible.yml`: runs `task site` on push to `main`.
 * `.github/workflows/pre-commit.yml`: runs pre-commit on the files a
   pull request changes.
@@ -279,7 +281,8 @@ The node itself runs in UTC.
 * cert-manager: the OCIRepository uses `1.x`, so Flux upgrades it to
   every new 1.x release.
 * Renovate opens pull requests for GitHub Actions, pre-commit hooks,
-  Ansible collections and the system-upgrade-controller release.
+  Ansible collections, the system-upgrade-controller release and
+  amazon-eks-pod-identity-webhook.
   Minor and patch updates merge on their own once the pre-commit check
   passes. Major updates wait for review. Open items are listed in the
   Dependency Dashboard issue.
@@ -342,6 +345,39 @@ The node itself runs in UTC.
 * `task secret` pipes the private key from `aws ssm get-parameter` over
   SSH into `k3s kubectl`. It never passes through Ansible, an
   environment variable or a file.
+
+### AWS roles for pods
+
+* ServiceAccount tokens are signed for the issuer
+  `https://oidc.wombacher.dev/<cluster folder>`. The discovery document
+  and the JWKS are in the domain-mgmt repo under
+  `static/oidc.wombacher.dev/<cluster folder>/`. After a rebuild,
+  publish the new JWKS, see step 8 of [New or rebuilt VM](#new-or-rebuilt-vm).
+* In the AWS account that holds the roles: one IAM OIDC provider per
+  issuer URL with the audience `sts.amazonaws.com`. A role's trust policy
+  matches ServiceAccounts with the `sub` claim, for example:
+
+  ```json
+  "Condition": {"StringEquals": {
+    "oidc.wombacher.dev/lab-wombacher-dev:aud": "sts.amazonaws.com",
+    "oidc.wombacher.dev/lab-wombacher-dev:sub": "system:serviceaccount:<namespace>:<serviceaccount>"
+  }}
+  ```
+
+* In the cluster: annotate the app's ServiceAccount with the role ARN:
+
+  ```yaml
+  metadata:
+    annotations:
+      eks.amazonaws.com/role-arn: arn:aws:iam::<account>:role/<role>
+  ```
+
+* At pod creation the webhook adds `AWS_ROLE_ARN`,
+  `AWS_WEB_IDENTITY_TOKEN_FILE`, the token mount and, unless set,
+  `AWS_REGION` and `AWS_DEFAULT_REGION` with `eu-central-1`.
+* Pods created before the annotation, or while the webhook was down,
+  have no credentials. Restart them with
+  `kubectl -n <namespace> rollout restart deployment/<name>`.
 
 ## Source
 
