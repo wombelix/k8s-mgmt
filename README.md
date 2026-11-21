@@ -27,8 +27,7 @@ SPDX-License-Identifier: Apache-2.0
 
 ## Overview
 
-This repo manages single-node k3s clusters on Hetzner Cloud VMs. Each
-host in `ansible/inventory.yml` is one cluster.
+This repo manages Kubernetes clusters.
 
 * Ansible configures the node, installs k3s and bootstraps Flux.
   A GitHub Actions pipeline runs it on push to `main`.
@@ -381,6 +380,18 @@ The node itself runs in UTC.
 * Pods created before the annotation, or while the webhook was down,
   have no credentials. Restart them with
   `kubectl -n <namespace> rollout restart deployment/<name>`.
+
+### Pod security and network policies
+
+* Pod Security `restricted` is the default for every namespace except
+  kube-system. Pods must run as non-root, drop all capabilities, disallow
+  privilege escalation and use the `RuntimeDefault` seccomp profile.
+  Check a manifest with `kubectl apply --dry-run=server`.
+* Every namespace has the NetworkPolicy `allow-same-namespace`. Add it to
+  each new namespace. An app behind Traefik also needs a rule that allows
+  ingress from kube-system.
+* The API server audit log is at `/var/log/k3s-audit/audit.log` on the
+  node. It holds writes only.
 
 ## Source
 
