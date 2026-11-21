@@ -27,6 +27,37 @@ patches:
       - op: add
         path: /spec/template/spec/containers/0/command/-
         value: --aws-default-region=eu-central-1
+  # Upstream runs without securityContext on port 443, Pod Security restricted needs non-root
+  - target:
+      kind: Deployment
+      name: pod-identity-webhook
+    patch: |
+      - op: add
+        path: /spec/template/spec/containers/0/command/-
+        value: --port=8443
+      - op: add
+        path: /spec/template/spec/securityContext
+        value:
+          runAsNonRoot: true
+          runAsUser: 65532
+          runAsGroup: 65532
+          seccompProfile:
+            type: RuntimeDefault
+      - op: add
+        path: /spec/template/spec/containers/0/securityContext
+        value:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
+  - target:
+      kind: Service
+      name: pod-identity-webhook
+    patch: |
+      - op: replace
+        path: /spec/ports/0/targetPort
+        value: 8443
   # Upstream names assume the default namespace
   - target:
       kind: Certificate
