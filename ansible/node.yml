@@ -193,6 +193,16 @@
             - "audit-log-maxage=30"
             - "audit-log-maxbackup=10"
             - "audit-log-maxsize=100"
+            # Pod tokens keep their real lifetime instead of up to 1 year
+            - "service-account-extend-token-expiration=false"
+          kube-controller-manager-arg:
+            - "terminated-pod-gc-threshold=100"
+          kubelet-arg:
+            # Budget per pod, far below kernel.pid_max, so no pod can use up the node's process IDs
+            - "pod-max-pids=4096"
+            - "streaming-connection-idle-timeout=5m"
+            # From the k3s CIS hardening guide, affects TLS 1.2 only
+            - "tls-cipher-suites=TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305"
         dest: /etc/rancher/k3s/config.yaml
         owner: root
         group: root
