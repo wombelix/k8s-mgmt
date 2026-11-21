@@ -14,11 +14,28 @@
       ],
       datasourceTemplate: 'github-releases',
     },
+    {
+      // Upstream manifest URLs in infrastructure/pod-identity-webhook/kustomization.yaml
+      customType: 'regex',
+      managerFilePatterns: ['/^infrastructure/pod-identity-webhook/kustomization\\.yaml$/'],
+      matchStrings: [
+        'https://raw\\.githubusercontent\\.com/(?<depName>aws/amazon-eks-pod-identity-webhook)/(?<currentValue>v[^/]+)/',
+      ],
+      datasourceTemplate: 'github-tags',
+    },
   ],
   packageRules: [
     {
       matchUpdateTypes: ['minor', 'patch', 'digest'],
       automerge: true,
+    },
+    {
+      // Manifests and image of one release in one pull request
+      matchPackageNames: [
+        'aws/amazon-eks-pod-identity-webhook',
+        'public.ecr.aws/eks/amazon-eks-pod-identity-webhook',
+      ],
+      groupName: 'amazon-eks-pod-identity-webhook',
     },
   ],
 }
