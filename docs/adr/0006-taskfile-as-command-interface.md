@@ -19,23 +19,27 @@ to find, the same on every machine and usable from a pipeline.
 
 ## Decision
 
-* `Taskfile.yml` in the repo root holds all commands: `deps`,
-  `bootstrap`, `site`, `secret`, `kubeconfig`.
-* Tasks stay small. Arguments after `--` go to `ansible-playbook`.
-* Task variables must not clash with common environment variables.
-  `HOST` is set by many shells, so `task secret` uses `CLUSTER`.
+We use Task with one Taskfile in the repo root for all commands.
+
+- Each task stays small and calls one tool. Extra arguments pass through
+  to that tool.
+- Task variable names must not clash with common environment variables,
+  such as `HOST`, which many shells set.
 
 ## Consequences
 
-* `task --list` shows every command.
-* The pipeline runs the same commands as a person.
-* `task` must be installed.
+- Task lists every command with its description.
+- The pipeline runs the same commands as a person.
+- Every machine that runs the commands needs Task installed.
 
 ## Alternatives Considered
 
-* Shell wrapper scripts: one file per command, no built-in help.
-* Makefile: Make syntax for something that is not a build.
-* Plain `ansible-playbook` commands in the README: easy to mistype.
+- Shell wrapper scripts need no extra tool. They need one file per
+  command and have no built-in help.
+- A Makefile works with a tool that most machines already have. Make is
+  built for builds, and its syntax adds friction for plain commands.
+- Plain `ansible-playbook` commands in the README need no extra tool.
+  They are easy to mistype.
 
 ## Related
 

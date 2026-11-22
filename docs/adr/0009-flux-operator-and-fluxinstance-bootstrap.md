@@ -21,33 +21,40 @@ Any tool that keeps changing them would conflict with Flux.
 
 ## Decision
 
-* `cluster.yml` installs Flux Operator with helm from the upstream OCI
-  chart, only when the release is missing.
-* A ResourceSet in the cluster folder takes over the release with an
-  OCIRepository and a HelmRelease that follow every new chart version.
-* `cluster.yml` applies the FluxInstance only when it is missing. Flux
-  then syncs the same file from Git.
-* The FluxInstance follows every release of the current Flux major
-  version and syncs the cluster folder from this public repo over HTTPS.
-* Ansible uses the helm and kubectl CLIs, not `kubernetes.core`.
+Ansible installs Flux Operator and the FluxInstance once, then Flux
+takes over both.
+
+- The cluster playbook installs Flux Operator with helm from the
+  upstream OCI chart, only when the release is missing.
+- A ResourceSet in the cluster folder takes over the operator release.
+  It follows every new chart version.
+- The cluster playbook applies the FluxInstance only when it is missing.
+  Flux then syncs the same manifest from Git.
+- The FluxInstance follows every release of the current Flux major
+  version. It syncs the cluster folder from this public repo over HTTPS.
+- Ansible uses the helm and kubectl CLIs, not the kubernetes.core
+  collection.
 
 ## Consequences
 
-* Flux and the operator upgrade without Ansible.
-* Changes to the FluxInstance go through Git.
-* No extra collection and no Python `kubernetes` library.
+- Flux and the operator upgrade without Ansible.
+- Changes to the FluxInstance go through Git.
+- No extra collection and no Python kubernetes library are needed.
+- Flux needs no Git credentials, because the repo is public.
+- A new Flux major version needs a change in Git.
 
 ## Alternatives Considered
 
-* `kubernetes.core.helm`: upgrades the release on every run when chart
-  or values differ, which conflicts with Flux.
-* `flux-operator install` CLI: upstream marks it for development and
-  testing.
-* `flux bootstrap github`: needs a CLI run, the operator covers
-  bootstrap and upgrades.
-* k3s HelmChart for the operator: the k3s helm-controller would keep
-  owning the release next to Flux.
+- The kubernetes.core.helm module is the native Ansible way. It upgrades
+  the release on every run when chart or values differ, which conflicts
+  with Flux.
+- The `flux-operator install` CLI does the install in one command.
+  Upstream marks it for development and testing.
+- `flux bootstrap github` is the classic Flux bootstrap. It needs a CLI
+  run, and the operator already covers bootstrap and upgrades.
+- A k3s HelmChart for the operator is built into k3s. The k3s
+  helm-controller would keep owning the release next to Flux.
 
 ## Related
 
-* Depends on: [ADR-0008](0008-cluster-bootstrap-on-the-node.md)
+- Depends on: [ADR-0008](0008-cluster-bootstrap-on-the-node.md)
