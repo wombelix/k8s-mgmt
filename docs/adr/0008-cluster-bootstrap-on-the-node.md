@@ -51,4 +51,4 @@ kubeconfig never leaves the node during a run.
 
 ## Related
 
-- Extends: [ADR-0003](0003-bootstrap-and-site-playbooks.md)
+- Extends: [ADR-0003](0003-separate-bootstrap-and-site-playbooks.md)

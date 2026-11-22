@@ -29,7 +29,7 @@ cluster plus a recovery key.
   secret values, for the cluster key and for a personal recovery key that
   is kept outside AWS.
 - Flux decrypts with a Secret that holds the cluster key, see
-  [ADR-0011](0011-age-key-delivery-with-task-secret.md).
+  [ADR-0011](0011-age-key-delivery-over-ssh-outside-ansible.md).
 
 ## Consequences
 
@@ -48,7 +48,7 @@ cluster plus a recovery key.
 - Without a recovery key there is one key less to protect. Re-keying
   then depends on SSM.
 - External Secrets Operator is covered in
-  [ADR-0011](0011-age-key-delivery-with-task-secret.md).
+  [ADR-0011](0011-age-key-delivery-over-ssh-outside-ansible.md).
 
 ## Related
 

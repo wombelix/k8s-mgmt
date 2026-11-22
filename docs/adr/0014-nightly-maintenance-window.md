@@ -55,5 +55,5 @@ and the k3s Plan.
 
 ## Related
 
-* Amends: [ADR-0007](0007-os-updates.md)
+* Amends: [ADR-0007](0007-unattended-os-updates.md)
 * Depends on: [ADR-0013](0013-k3s-upgrades-with-system-upgrade-controller.md)

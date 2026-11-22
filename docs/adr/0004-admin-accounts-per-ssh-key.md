@@ -57,4 +57,4 @@ login is key-only.
 
 ## Related
 
-- Depends on: [ADR-0003](0003-bootstrap-and-site-playbooks.md)
+- Depends on: [ADR-0003](0003-separate-bootstrap-and-site-playbooks.md)

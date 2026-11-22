@@ -57,6 +57,6 @@ We run k3s on the latest stable Debian release and install it once.
 
 ## Related
 
-- Depends on: [ADR-0003](0003-bootstrap-and-site-playbooks.md)
+- Depends on: [ADR-0003](0003-separate-bootstrap-and-site-playbooks.md)
 - Extended by: [ADR-0013](0013-k3s-upgrades-with-system-upgrade-controller.md)
 - Amended by: [ADR-0016](0016-dual-stack-k3s.md)

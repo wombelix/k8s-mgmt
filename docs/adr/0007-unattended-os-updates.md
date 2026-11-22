@@ -46,5 +46,5 @@ playbooks upgrade packages only at bootstrap.
 
 ## Related
 
-- Depends on: [ADR-0003](0003-bootstrap-and-site-playbooks.md)
+- Depends on: [ADR-0003](0003-separate-bootstrap-and-site-playbooks.md)
 - Amended by: [ADR-0014](0014-nightly-maintenance-window.md)
