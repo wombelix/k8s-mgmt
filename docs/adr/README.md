@@ -46,6 +46,7 @@ see
 - [ADR-0024: Network policies from one ResourceSet](0024-network-policies-from-one-resourceset.md)
 - [ADR-0025: Kyverno for generated resources](0025-kyverno-for-generated-resources.md)
 - [ADR-0026: App ingress with ListenerSets](0026-app-ingress-with-listenersets.md)
+- [ADR-0027: Shared Istio ingress Gateway in place of Traefik](0027-shared-istio-ingress-gateway-in-place-of-traefik.md)
 
 ## When to write an ADR
 

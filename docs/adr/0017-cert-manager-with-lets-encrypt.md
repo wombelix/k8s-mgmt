@@ -35,8 +35,8 @@ HTTP-01.
   release is removed.
 - Two ClusterIssuers point to Let's Encrypt staging and production. Both
   solve HTTP-01 through the cluster ingress.
-  [ADR-0023](0023-sidecar-less-mtls-with-istio-ambient.md) moved this
-  to the Istio Gateway.
+  [ADR-0027](0027-shared-istio-ingress-gateway-in-place-of-traefik.md)
+  moved this to the Istio Gateway.
 - Flux applies the issuers only after cert-manager is ready.
 - Apps start with the staging issuer. They switch to production once
   they are ready for real use.
@@ -69,4 +69,4 @@ HTTP-01.
 
 - Depends on: [ADR-0009](0009-flux-operator-and-fluxinstance-bootstrap.md)
 - Depends on: [ADR-0016](0016-dual-stack-k3s.md)
-- Amended by: [ADR-0023](0023-sidecar-less-mtls-with-istio-ambient.md)
+- Amended by: [ADR-0027](0027-shared-istio-ingress-gateway-in-place-of-traefik.md)
