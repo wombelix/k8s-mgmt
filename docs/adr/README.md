@@ -12,7 +12,10 @@ project.
 ## What are ADRs
 
 An ADR is a short document that records one decision, why it was made,
-and what follows from it. For the reasoning behind using them, see
+and what follows from it. A reader new to the project, human or AI
+agent, should understand the decision and its reasons from the ADR
+alone, without reading the code. For the reasoning behind using them,
+see
 [ADR-0001: Use of Architecture Decision Records](0001-use-of-architecture-decision-records.md).
 
 ## Index of ADRs
@@ -44,22 +47,107 @@ and what follows from it. For the reasoning behind using them, see
 - [ADR-0025: Kyverno for generated resources](0025-kyverno-for-generated-resources.md)
 - [ADR-0026: App ingress with ListenerSets](0026-app-ingress-with-listenersets.md)
 
-## Writing an ADR
+## When to write an ADR
 
-- One decision per ADR.
-- Write it for the project as a whole, not for one instance, host or
-  environment. Real names and examples belong in the README.
-- Record the decision, its reasons, the chosen tools and approaches, and
-  policies such as "latest stable release".
-- Leave out implementation details: versions, IP ranges, times, exact
-  config lines and commands. They change with the code. Name the file
-  that holds them instead.
-- Accepted ADRs are not edited. A new ADR supersedes or amends an old
-  one.
+Write an ADR when a choice affects how the project is built or run, and
+someone could later ask why. Examples are the choice of a tool or
+platform, a security or update policy, a rule for how components work
+together, or the rejection of an obvious option. A small decision can be
+worth an ADR too.
+
+A bug fix, a refactoring or a config change within an existing decision
+needs no ADR.
+
+## What goes into an ADR
+
+An ADR records:
+
+- The problem, the constraints and the goal.
+- The decision, stated as a rule or policy, for example "follow every
+  release of the current major version".
+- The chosen tools, platforms and approaches.
+- The consequences, both good and bad.
+- The options that were rejected, and why.
+
+One decision per ADR. Several decisions that serve one goal get one ADR
+each when each of them could be made without the others.
+
+Write it for the project as a whole, not for one instance, host or
+environment. Real names and examples belong in the project README.
+
+## What stays out of an ADR
+
+An ADR leaves out implementation details. They change with the code and
+make the ADR go out of date. Examples:
+
+- Versions, IP ranges, times, schedules and other config values.
+- File paths, folder names and config file lines.
+- Resource fields, labels, annotations, flags and variable names.
+- Commands, task names and step-by-step procedures.
+- Names of hosts, accounts and environments.
+
+Names that are part of the decision are fine, such as a tool, a
+protocol, a standard or an API kind.
+
+A simple test: if a code change can make a sentence wrong while the
+decision stays the same, the sentence belongs in a code comment or in
+the project README, not in the ADR.
+
+## Writing style
+
+- Write for a reader who is new to the project.
+- Use plain English, short sentences and active voice.
+- Use full sentences. Bullets are fine for a list of rules or options,
+  but each bullet is a full sentence.
+- Keep an ADR to one or two pages.
+- The title names the decision, for example "k3s upgrades with
+  system-upgrade-controller", not "k3s upgrades".
+
+## Status
+
+- **Proposed**: under discussion, not in effect yet.
+- **Accepted**: agreed and in effect.
+- **Superseded by ADR-NNNN**: a newer ADR replaces the whole decision.
+- **Deprecated**: no longer in effect, and nothing replaces it.
+
+An ADR that a newer ADR extends or amends stays Accepted.
+
+## Related ADRs
+
+The Related section links an ADR to others with these terms:
+
+- **Depends on**: this decision needs the other decision in place.
+- **Extends**: this decision builds on the other one and changes none of
+  it.
+- **Amends**: this decision changes part of the other one. The rest
+  stays in effect.
+- **Supersedes**: this decision replaces the other one completely.
+
+Extends, Amends and Supersedes each have a reverse link in the older
+ADR: Extended by, Amended by and Superseded by.
+
+## Changing an ADR
+
+An accepted ADR keeps its decision. These edits are allowed:
+
+- Fix wording, style and links.
+- Remove implementation details.
+- Update the status and the Related section.
+- Replace a statement that a newer ADR made wrong with a link to that
+  ADR.
+
+A changed decision needs a new ADR that extends, amends or supersedes
+the old one. Git keeps every earlier version.
 
 ## Creating a New ADR
 
-1. Copy the [template](template.md) to a new file named `NNNN-title-with-hyphens.md`
-1. Fill in the template sections
-1. Add a line for the ADR to the index above
-1. Submit for review and acceptance
+1. Copy the [template](template.md) to a new file named
+   `NNNN-title-with-hyphens.md`, with the next free number.
+1. Fill in the sections. Follow the guidance in the template, then
+   delete it.
+1. Set the status to Proposed and the date to today.
+1. Add a line for the ADR to the index above.
+1. Add the reverse links to every ADR it extends, amends or supersedes.
+   Set the status of a superseded ADR and fix statements in older ADRs
+   that the new one makes wrong.
+1. After review, set the status to Accepted.
