@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-# From the k3s CIS hardening guide, ingress and metrics break without the allow rules
+# From the k3s CIS hardening guide, DNS and metrics break without the allow rules
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -31,34 +31,6 @@ spec:
   podSelector:
     matchLabels:
       k8s-app: metrics-server
-  policyTypes:
-    - Ingress
-  ingress:
-    - {}
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-all-svclb-traefik
-  namespace: kube-system
-spec:
-  podSelector:
-    matchLabels:
-      svccontroller.k3s.cattle.io/svcname: traefik
-  policyTypes:
-    - Ingress
-  ingress:
-    - {}
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-all-traefik
-  namespace: kube-system
-spec:
-  podSelector:
-    matchLabels:
-      app.kubernetes.io/name: traefik
   policyTypes:
     - Ingress
   ingress:
