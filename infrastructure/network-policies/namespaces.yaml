@@ -37,7 +37,7 @@ spec:
         # so kubelet health checks and API server calls to webhooks keep working.
         - from:
             - podSelector: {}
-        <<- if inputs.mesh >>
+        <<- if get inputs "mesh" >>
         # Lets the ingress gateway forward outside requests to the apps.
         # Istio sends all traffic between pods encrypted on port 15008.
         - from:
