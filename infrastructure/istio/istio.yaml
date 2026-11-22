@@ -114,6 +114,13 @@ spec:
     gateways:
       seccompProfile:
         type: RuntimeDefault
+    # The cluster is dual-stack, without this the ingress gateway only listens on IPv4
+    env:
+      ISTIO_DUAL_STACK: "true"
+    meshConfig:
+      defaultConfig:
+        proxyMetadata:
+          ISTIO_DUAL_STACK: "true"
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
