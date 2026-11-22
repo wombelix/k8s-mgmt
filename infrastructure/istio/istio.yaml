@@ -154,6 +154,7 @@ spec:
       - cert-manager
       - pod-identity-webhook
       - system-upgrade
+      - kyverno
     ambient:
       # Every pod in every other namespace joins the mesh, unless it has the label istio.io/dataplane-mode=none
       enablementSelectors:

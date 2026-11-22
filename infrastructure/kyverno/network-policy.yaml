@@ -1,0 +1,20 @@
+# SPDX-FileCopyrightText: 2026 Dominik Wombacher <dominik@wombacher.cc>
+#
+# SPDX-License-Identifier: Apache-2.0
+
+# Kyverno does not generate policies in its own namespace, so it keeps this one.
+# Pods in other namespaces cannot connect. The node itself always can,
+# so kubelet health checks and API server calls to webhooks keep working.
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: namespace-ingress
+  namespace: kyverno
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector: {}
