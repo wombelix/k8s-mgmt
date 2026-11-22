@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Use staging until an app is ready for production, then switch the issuerRef of its Certificate.
-# Certificates for the shared Gateway live in istio-ingress, only routes from there may use port 80.
+# Certificates for the shared Gateway belong in istio-ingress, only routes from there may use port 80.
 ---
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
