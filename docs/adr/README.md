@@ -41,6 +41,8 @@ and what follows from it. For the reasoning behind using them, see
 - [ADR-0022: Cluster hardening from the k3s CIS guide](0022-cluster-hardening-from-the-k3s-cis-guide.md)
 - [ADR-0023: Sidecar-less mTLS with Istio ambient](0023-sidecar-less-mtls-with-istio-ambient.md)
 - [ADR-0024: Network policies from one ResourceSet](0024-network-policies-from-one-resourceset.md)
+- [ADR-0025: Kyverno for generated resources](0025-kyverno-for-generated-resources.md)
+- [ADR-0026: App ingress with ListenerSets](0026-app-ingress-with-listenersets.md)
 
 ## Writing an ADR
 
