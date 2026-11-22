@@ -10,4 +10,3 @@ resources:
   - https://github.com/rancher/system-upgrade-controller/releases/download/v0.21.1/crd.yaml
   - https://github.com/rancher/system-upgrade-controller/releases/download/v0.21.1/system-upgrade-controller.yaml
   - plan.yaml
-  - network-policy.yaml

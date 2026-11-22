@@ -10,7 +10,6 @@ namespace: pod-identity-webhook
 resources:
   - namespace.yaml
   - issuer.yaml
-  - network-policy.yaml
   - https://raw.githubusercontent.com/aws/amazon-eks-pod-identity-webhook/v0.6.19/deploy/auth.yaml
   - https://raw.githubusercontent.com/aws/amazon-eks-pod-identity-webhook/v0.6.19/deploy/deployment-base.yaml
   - https://raw.githubusercontent.com/aws/amazon-eks-pod-identity-webhook/v0.6.19/deploy/mutatingwebhook.yaml

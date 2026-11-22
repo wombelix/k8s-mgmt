@@ -2,10 +2,10 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-# Policies for namespaces that k3s creates, other namespaces keep theirs next to their resources
+# Ingress policies for all namespaces, kube-system keeps its extra rules
 ---
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
+  - namespaces.yaml
   - kube-system.yaml
-  - default.yaml
