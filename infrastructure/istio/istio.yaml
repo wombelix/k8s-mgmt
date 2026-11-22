@@ -137,6 +137,7 @@ spec:
     excludeNamespaces:
       - kube-system
       - istio-system
+      # The ingress gateway is a mesh proxy itself and must not be captured by ztunnel
       - istio-ingress
       - flux-system
       - cert-manager
