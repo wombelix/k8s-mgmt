@@ -65,6 +65,14 @@ example `clusters/lab-wombacher-dev/`.
   production ClusterIssuers. Applied after cert-manager is ready.
 * `infrastructure/pod-identity-webhook/`: amazon-eks-pod-identity-webhook
   for AWS IAM roles for pods.
+* `infrastructure/istio/`: Istio ambient from its Helm charts: base,
+  istiod, CNI agent and ztunnel.
+* `infrastructure/istio-config/`: the mesh-wide `STRICT` mTLS policy.
+  Applied after the Istio CRDs exist.
+* `infrastructure/istio-ingress/`: the shared ingress Gateway and the
+  HTTP to HTTPS redirect.
+* `infrastructure/network-policies/`: the default ingress policy for
+  every namespace and the extra rules for kube-system.
 * `.github/workflows/ansible.yml`: runs `task site` on push to `main`.
 * `.github/workflows/pre-commit.yml`: runs pre-commit on the files a
   pull request changes.
@@ -282,6 +290,9 @@ The node itself runs in UTC.
   ResourceSet `flux-operator.yaml` in the cluster folder.
 * cert-manager: the OCIRepository uses `1.x`, so Flux upgrades it to
   every new 1.x release.
+* Istio: the four OCIRepositories use `1.x`, so Flux upgrades Istio to
+  every new 1.x release. Pods in the mesh lose their network for about a
+  second while ztunnel restarts.
 * Renovate opens pull requests for GitHub Actions, pre-commit hooks,
   Ansible collections, the system-upgrade-controller release and
   amazon-eks-pod-identity-webhook.
@@ -302,23 +313,48 @@ The node itself runs in UTC.
 * Pods use `10.42.0.0/16` and `fd61:4655:2980::/56`, services use
   `10.43.0.0/16` and `fd61:4655:2980:100::/112`. Outgoing IPv6 from
   pods is NATed to the node address.
-* The bundled Traefik is the default IngressClass `traefik`. It listens
-  on ports 80 and 443 of both node addresses.
+* The bundled Traefik is disabled. The Istio Gateway `ingress` in
+  `istio-ingress` listens on ports 80 and 443 of both node addresses.
+  Port 80 only serves HTTP-01 challenges and redirects everything else
+  to HTTPS. Only routes from `istio-ingress` may use port 80.
+* Apps add an HTTPS listener with their host name and certificate to
+  the shared Gateway, and an HTTPRoute in their own namespace.
+
+### Encryption in transit
+
+* Istio ambient encrypts all traffic between pods with mTLS, also on
+  the same node. No sidecar, no label and no change in the app.
+* Every pod joins the mesh, except pods in the namespaces in
+  `excludeNamespaces` in `infrastructure/istio/istio.yaml` and pods
+  with the label `istio.io/dataplane-mode: none`. Add every new
+  infrastructure namespace to that list.
+* The mesh-wide PeerAuthentication `STRICT` makes pods in the mesh
+  refuse plain text from outside the mesh.
+* Check that a pod is in the mesh:
+
+  ```sh
+  kubectl -n <namespace> get pod <pod> -o jsonpath='{.metadata.annotations.ambient\.istio\.io/redirection}'
+  ```
+
+  `enabled` means it is.
 
 ### Certificates
 
 * cert-manager issues certificates from Let's Encrypt with HTTP-01
-  through Traefik.
+  through the Istio Gateway. Its challenge routes take precedence over
+  the HTTPS redirect, because they name the exact host.
+* Certificates for the shared Gateway belong in `istio-ingress`.
 * Two ClusterIssuers: `letsencrypt-staging` and
   `letsencrypt-production`. Staging certificates are not trusted by
   browsers, but staging has much higher rate limits.
-* Apps start with staging. Once an app is ready for real use, switch its
-  Ingress to production:
+* Apps start with staging. Once an app is ready for real use, switch the
+  issuer of its Certificate to production:
 
   ```yaml
-  metadata:
-    annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-staging
+  spec:
+    issuerRef:
+      kind: ClusterIssuer
+      name: letsencrypt-staging
   ```
 
 * Check a certificate with
@@ -387,9 +423,15 @@ The node itself runs in UTC.
   kube-system. Pods must run as non-root, drop all capabilities, disallow
   privilege escalation and use the `RuntimeDefault` seccomp profile.
   Check a manifest with `kubectl apply --dry-run=server`.
-* Every namespace has the NetworkPolicy `allow-same-namespace`. Add it to
-  each new namespace. An app behind Traefik also needs a rule that allows
-  ingress from kube-system.
+* Every namespace has the NetworkPolicy `default-ingress`. It allows
+  ingress only from the same namespace and the node. The ResourceSet in
+  `infrastructure/network-policies/namespaces.yaml` creates it from one
+  template. Add each new namespace there.
+* Set `mesh: true` for a namespace in the mesh. Its policy then also
+  lets the ingress gateway in on port 15008, where Istio sends the
+  encrypted traffic.
+* Extra rules for one component are next to that component, for example
+  `infrastructure/istio-ingress/network-policy.yaml`.
 * The API server audit log is at `/var/log/k3s-audit/audit.log` on the
   node. It holds writes only.
 
