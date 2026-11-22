@@ -44,3 +44,7 @@ spec:
   values:
     crds:
       enabled: true
+    # cert-manager creates HTTPRoutes on the Istio Gateway for HTTP-01 challenges
+    config:
+      gatewayAPI:
+        enabled: true
