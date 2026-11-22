@@ -8,7 +8,7 @@ SPDX-License-Identifier: CC0-1.0
 
 ## Status
 
-Accepted
+Superseded by [ADR-0025](0025-kyverno-for-generated-resources.md)
 
 Date: 2026-11-22
 
@@ -54,5 +54,6 @@ NetworkPolicy. Some object per namespace must exist.
 
 ## Related
 
+* Superseded by: [ADR-0025](0025-kyverno-for-generated-resources.md)
 * Amends: [ADR-0022](0022-cluster-hardening-from-the-k3s-cis-guide.md)
 * Depends on: [ADR-0009](0009-flux-operator-and-fluxinstance-bootstrap.md)
