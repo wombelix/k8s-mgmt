@@ -7,6 +7,20 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
+  name: namespace-ingress
+  namespace: kube-system
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  # Kyverno skips kube-system. Pods in other namespaces cannot connect, the node itself always can.
+  ingress:
+    - from:
+        - podSelector: {}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
   name: allow-dns
   namespace: kube-system
 spec:

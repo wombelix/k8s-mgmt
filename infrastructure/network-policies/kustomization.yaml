@@ -2,10 +2,9 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-# Ingress policies for all namespaces, kube-system keeps its extra rules
+# Policies for kube-system, Kyverno generates them for all other namespaces
 ---
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - namespaces.yaml
   - kube-system.yaml

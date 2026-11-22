@@ -1,0 +1,61 @@
+# SPDX-FileCopyrightText: 2026 Dominik Wombacher <dominik@wombacher.cc>
+#
+# SPDX-License-Identifier: Apache-2.0
+
+# One ingress policy for every namespace, existing and new
+# https://kyverno.io/docs/policy-types/generating-policy/
+---
+apiVersion: policies.kyverno.io/v1
+kind: GeneratingPolicy
+metadata:
+  name: namespace-ingress
+spec:
+  evaluation:
+    # Creates the policy in namespaces that already exist
+    generateExisting:
+      enabled: true
+    # Recreates the policy if someone changes or deletes it
+    synchronize:
+      enabled: true
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        # UPDATE too, so a namespace created while Kyverno was down gets its policy on the next change
+        operations: ["CREATE", "UPDATE"]
+        resources: ["namespaces"]
+  matchConditions:
+    # Both keep their own policy file, Kyverno skips them
+    - name: not-kube-system-or-kyverno
+      expression: "!(object.metadata.name in ['kube-system', 'kyverno'])"
+  variables:
+    - name: namespace
+      expression: "object.metadata.name"
+  generate:
+    - template:
+        interpolate: cel
+        value: |
+          apiVersion: networking.k8s.io/v1
+          kind: NetworkPolicy
+          metadata:
+            name: namespace-ingress
+            namespace: (( variables.namespace ))
+          spec:
+            podSelector: {}
+            policyTypes:
+              - Ingress
+            ingress:
+              # Pods in other namespaces cannot connect. The node itself always can,
+              # so kubelet health checks and API server calls to webhooks keep working.
+              - from:
+                  - podSelector: {}
+              # Lets the ingress gateway forward outside requests to the apps.
+              # Istio sends all traffic between pods encrypted on port 15008.
+              # Namespaces outside the mesh have nothing listening there.
+              - from:
+                  - namespaceSelector:
+                      matchLabels:
+                        kubernetes.io/metadata.name: istio-ingress
+                ports:
+                  - port: 15008
+                    protocol: TCP
