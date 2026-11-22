@@ -45,7 +45,8 @@ as static files by a Cloudflare Worker.
 - After a rebuild, pods get no AWS credentials until the new JWKS is
   published. Publishing is a manual step in a second repo.
 - No bucket, no rewrite rule and no storage credentials in a pipeline
-  are needed. Static asset requests are free.
+  are needed. At this scale, the requests stay well within the
+  Cloudflare free tier.
 - Bot protection on the zone stays off, because it could block the fetch
   from AWS STS.
 
