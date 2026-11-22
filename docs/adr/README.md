@@ -39,6 +39,8 @@ and what follows from it. For the reasoning behind using them, see
 - [ADR-0020: Public service account issuer](0020-public-service-account-issuer.md)
 - [ADR-0021: AWS IAM roles for pods with amazon-eks-pod-identity-webhook](0021-aws-iam-roles-for-pods-with-pod-identity-webhook.md)
 - [ADR-0022: Cluster hardening from the k3s CIS guide](0022-cluster-hardening-from-the-k3s-cis-guide.md)
+- [ADR-0023: Sidecar-less mTLS with Istio ambient](0023-sidecar-less-mtls-with-istio-ambient.md)
+- [ADR-0024: Network policies from one ResourceSet](0024-network-policies-from-one-resourceset.md)
 
 ## Writing an ADR
 
