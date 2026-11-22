@@ -1,0 +1,15 @@
+# SPDX-FileCopyrightText: 2026 Dominik Wombacher <dominik@wombacher.cc>
+#
+# SPDX-License-Identifier: Apache-2.0
+
+# Mesh-wide in the root namespace: pods in the mesh refuse plaintext from outside the mesh
+# https://istio.io/latest/docs/reference/config/security/peer_authentication/
+---
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: istio-system
+spec:
+  mtls:
+    mode: STRICT
