@@ -20,14 +20,13 @@ spec:
   validations:
     # Outside istio-ingress, only cert-manager's challenge routes may attach to the shared Gateway.
     # A parentRef without namespace points into the route's own namespace, never to the shared Gateway.
-    # "__namespace__" is how CEL writes the field "namespace", a reserved word.
     - expression: >-
         request.kind.kind != 'HTTPRoute' ||
         object.metadata.namespace == 'istio-ingress' ||
         (has(object.metadata.labels) && 'acme.cert-manager.io/http01-solver' in object.metadata.labels) ||
         !object.spec.parentRefs.exists(p,
           (!has(p.kind) || p.kind == 'Gateway') &&
-          has(p.__namespace__) && p.__namespace__ == 'istio-ingress' && p.name == 'ingress')
+          has(p.namespace) && p.namespace == 'istio-ingress' && p.name == 'ingress')
       message: "Only cert-manager challenge routes may attach to the shared Gateway, apps attach to their ListenerSet"
     # ListenerSets may only add HTTPS listeners, so no app serves plain HTTP
     - expression: >-
