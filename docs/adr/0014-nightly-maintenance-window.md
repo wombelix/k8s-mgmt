@@ -18,42 +18,48 @@ Clusters must be available from early morning until late at night, in
 the operator's local time. k3s upgrades, OS upgrades and reboots must
 all finish in a nightly window.
 
-Nodes run in UTC. The Debian apt timer starts in a fixed UTC slot, and
-ADR-0007 reboots at a fixed UTC time. Both fall into the morning in
-local time.
-
-`Automatic-Reboot-Time` passes `HH:MM` to `shutdown -r`, which uses the
-node's time zone. A fixed time moves by one hour at each DST change.
-systemd timers accept an IANA time zone after the time and follow DST.
+Nodes run in UTC. Debian's default upgrade timer falls into the morning
+in local time. unattended-upgrades schedules its reboot for a fixed time
+of day in the node's time zone. That time moves by one hour at each DST
+change. If the time has already passed when the upgrade ends, the reboot
+moves to the next day. systemd timers accept an IANA time zone and
+follow DST.
 
 ## Decision
 
-One nightly window in the operator's local time, in this order:
+All maintenance runs in one nightly window in the operator's local
+time, in a fixed order:
 
-1. k3s upgrade Jobs may start (ADR-0013).
-2. After that slot, a drop-in for `apt-daily-upgrade.timer` starts
-   unattended-upgrade, with the time zone in the timer.
-3. Right after the upgrade: reboot if needed.
+1. k3s upgrade Jobs may start, see
+   [ADR-0013](0013-k3s-upgrades-with-system-upgrade-controller.md).
+2. After that slot, the Debian upgrade timer starts unattended-upgrades.
+   The timer uses the operator's time zone, so it follows DST.
+3. Right after the upgrade, the node reboots if needed.
 
-Nodes keep UTC. The times and the time zone are in `ansible/node.yml`
-and the k3s Plan.
+Nodes keep UTC.
 
 ## Consequences
 
-* Maintenance usually ends well before the window closes.
-* k3s and the OS upgrade one after the other, not at the same time.
-* The schedule follows DST without changes.
-* Log timestamps on the nodes stay in UTC.
+- Maintenance usually ends well before the window closes.
+- k3s and the OS upgrade one after the other, not at the same time.
+- The schedule follows DST without changes.
+- Log timestamps on the nodes stay in UTC.
+- The Debian upgrade timer has a local override that must be kept.
+- The project README lists the times.
 
 ## Alternatives Considered
 
-* Node time zone set to local time: changes all log timestamps, and the
-  timer still needs an override.
-* Fixed reboot time in UTC: moves by one hour at each DST change.
-* OS upgrade before k3s: same result, but the k3s slot would start
-  earlier or end later.
+- Setting the node time zone to local time would put everything in one
+  time zone. It changes all log timestamps, and the timer still needs an
+  override.
+- A fixed reboot time is the default way of unattended-upgrades. It
+  moves by one hour at each DST change.
+- A reboot time at the start of the upgrade slot keeps one fixed time.
+  The upgrade runs later, so the reboot moves to the next day.
+- The OS upgrade before k3s gives the same result. The k3s slot would
+  start earlier or end later.
 
 ## Related
 
-* Amends: [ADR-0007](0007-unattended-os-updates.md)
-* Depends on: [ADR-0013](0013-k3s-upgrades-with-system-upgrade-controller.md)
+- Amends: [ADR-0007](0007-unattended-os-updates.md)
+- Depends on: [ADR-0013](0013-k3s-upgrades-with-system-upgrade-controller.md)

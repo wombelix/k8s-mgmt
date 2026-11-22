@@ -24,58 +24,68 @@ without manual work.
 
 ## Decision
 
+We apply the controls from the k3s CIS guide that protect a
+single-operator cluster, and skip the rest.
+
 Applied:
 
-* Pod Security Admission with `restricted` as the cluster default,
-  through an admission config file. kube-system is exempt. A namespace
-  that needs more sets its own label.
-* NetworkPolicies in every namespace: ingress only from the same
-  namespace. kube-system also allows DNS, metrics-server and the bundled
-  ingress controller, as in the guide. The k3s policy controller always
-  allows traffic from the local node, so on a single-node cluster the API
-  server reaches webhooks.
-* API server audit log at metadata level, without reads, Lease renewals
-  and Events, rotated on the node.
-* Pod tokens keep their real lifetime. A PID limit per pod. Idle
-  streaming connections close. The kubelet accepts only modern TLS 1.2
-  ciphers. Finished pods are deleted sooner.
+- Pod Security Admission enforces `restricted` as the cluster default.
+  kube-system is exempt. A namespace that needs more sets its own label.
+- Every namespace has a default NetworkPolicy that allows ingress only
+  from the same namespace and from the node. kube-system also allows the
+  traffic the guide lists for it.
+  [ADR-0025](0025-kyverno-for-generated-resources.md) sets how the
+  policies are created.
+- The API server writes an audit log of all writes at metadata level,
+  rotated on the node.
+- The guide's settings for the API server and the kubelet apply: pod
+  tokens keep their real lifetime, each pod has a PID limit, idle
+  streaming connections close, the kubelet accepts only modern TLS
+  ciphers, and finished pods are deleted sooner.
 
 Skipped:
 
-* Secrets encryption at rest: the key is on the same disk as the
-  datastore.
-* `protect-kernel-defaults`: the kubelet already sets the same values.
-  The flag only adds a way for the kubelet to fail on start.
-* EventRateLimit: its config is an alpha API, little gain for one
-  operator.
-* PKI file permissions: the affected files are public certificates.
-* AlwaysPullImages: meant for multi-tenant clusters. Images with
+- Secrets encryption at rest would put the encryption key on the same
+  disk as the datastore.
+- `protect-kernel-defaults` adds nothing, the kubelet already sets the
+  same values. The flag only adds a way for the kubelet to fail on
+  start.
+- EventRateLimit needs an alpha API for its config and adds little for
+  one operator.
+- Stricter PKI file permissions add nothing, the affected files are
+  public certificates.
+- AlwaysPullImages is meant for multi-tenant clusters. Images with
   `latest` already get pulled on every pod start.
-* Closing the API port: no static IP on the operator side, and kubectl
-  cannot start a tunnel from the kubeconfig.
+- Closing the API port is not possible. The operator has no static IP,
+  and kubectl cannot start a tunnel from the kubeconfig.
 
 ## Consequences
 
-* New workloads must meet `restricted`, or their namespace needs its own
+- New workloads must meet `restricted`, or their namespace needs its own
   Pod Security label.
-* Every new namespace needs its own NetworkPolicy. Egress stays open.
-* With more than one node, the API server reaches webhook pods from
-  another node. Namespaces with webhooks then need a rule that allows
-  the node addresses.
-* The audit log stays on the node. Root on the VM can change it.
-* The API port stays reachable from the internet. Client certificates
+- Egress stays open.
+- The k3s policy controller always allows traffic from the local node,
+  so the API server reaches webhooks. With more than one node, webhook
+  pods on another node would need a rule for the node addresses.
+- The audit log stays on the node. Root on the VM can change it.
+- The API port stays reachable from the internet. Client certificates
   and nightly k3s upgrades protect it.
-* The settings are in `ansible/node.yml` and next to each namespace in
-  `infrastructure/`.
 
 ## Alternatives Considered
 
-* Full CIS compliance: the skipped controls add no protection here.
-* A policy engine that creates NetworkPolicies for new namespaces: one
-  more component, not needed for a few namespaces.
-* VPN or SSH tunnel for the API port: not usable from kubectl alone.
+- Full CIS compliance gives a clean report. The skipped controls add no
+  protection here.
+- A policy engine that creates NetworkPolicies for new namespaces was
+  first rejected as one more component.
+  [ADR-0025](0025-kyverno-for-generated-resources.md) added Kyverno for
+  this later.
+- A VPN or SSH tunnel for the API port would hide it from the internet.
+  It is not usable from kubectl alone.
 
 ## Related
 
-* Depends on: [ADR-0002](0002-k3s-on-debian-installed-once.md)
-* Depends on: [ADR-0009](0009-flux-operator-and-fluxinstance-bootstrap.md)
+- Depends on: [ADR-0002](0002-k3s-on-debian-installed-once.md)
+- Depends on: [ADR-0009](0009-flux-operator-and-fluxinstance-bootstrap.md)
+- Extended by: [ADR-0023](0023-sidecar-less-mtls-with-istio-ambient.md)
+- Amended by: [ADR-0024](0024-network-policies-from-one-resourceset.md)
+- Amended by: [ADR-0025](0025-kyverno-for-generated-resources.md)
