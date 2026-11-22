@@ -8,4 +8,5 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - gateway.yaml
+  - admission-policy.yaml
   - network-policy.yaml

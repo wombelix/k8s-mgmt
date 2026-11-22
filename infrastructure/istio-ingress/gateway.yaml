@@ -12,15 +12,20 @@ metadata:
   namespace: istio-ingress
 spec:
   gatewayClassName: istio
+  # Apps add their HTTPS listeners with a ListenerSet in their own namespace
+  allowedListeners:
+    namespaces:
+      from: All
   listeners:
     # Port 80 only serves Let's Encrypt HTTP-01 challenges and redirects everything else to HTTPS.
-    # Only routes from this namespace may attach, so no app can serve plain HTTP.
+    # cert-manager creates the challenge routes in the app namespaces,
+    # infrastructure/istio-ingress/admission-policy.yaml refuses every other route from there.
     - name: http
       port: 80
       protocol: HTTP
       allowedRoutes:
         namespaces:
-          from: Same
+          from: All
 ---
 # Without a hostname this route has the lowest precedence, the challenge routes of cert-manager win
 # https://gateway-api.sigs.k8s.io/guides/http-redirect-rewrite/
