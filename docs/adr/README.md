@@ -101,8 +101,8 @@ the project README, not in the ADR.
 - Use full sentences. Bullets are fine for a list of rules or options,
   but each bullet is a full sentence.
 - Keep an ADR to one or two pages.
-- The title names the decision, for example "k3s upgrades with
-  system-upgrade-controller", not "k3s upgrades".
+- The title names the decision, for example "Database backups with
+  restic", not "Database backups".
 
 ## Status
 
