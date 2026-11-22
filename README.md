@@ -69,10 +69,15 @@ example `clusters/lab-wombacher-dev/`.
   istiod, CNI agent and ztunnel.
 * `infrastructure/istio-config/`: the mesh-wide `STRICT` mTLS policy.
   Applied after the Istio CRDs exist.
-* `infrastructure/istio-ingress/`: the shared ingress Gateway and the
-  HTTP to HTTPS redirect.
-* `infrastructure/network-policies/`: the default ingress policy for
-  every namespace and the extra rules for kube-system.
+* `infrastructure/istio-ingress/`: the shared ingress Gateway, the
+  HTTP to HTTPS redirect and the admission policy for port 80 and
+  ListenerSets.
+* `infrastructure/kyverno/`: Kyverno from its Helm chart.
+* `infrastructure/kyverno-policies/`: the GeneratingPolicy for the
+  default ingress policy in every namespace. Applied after Kyverno is
+  ready.
+* `infrastructure/network-policies/`: the policies for kube-system,
+  which Kyverno skips.
 * `.github/workflows/ansible.yml`: runs `task site` on push to `main`.
 * `.github/workflows/pre-commit.yml`: runs pre-commit on the files a
   pull request changes.
@@ -246,6 +251,67 @@ Cluster, context and user all use the host name. Never copy this file to
 CI. Its client certificate cannot be revoked without a k3s
 certificate rotation.
 
+### Add an app
+
+The app repo holds everything, this repo needs no change. Use the
+staging issuer first, then switch to `letsencrypt-production`.
+
+```yaml
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: app
+  namespace: <app namespace>
+spec:
+  secretName: app-tls
+  dnsNames:
+    - <host>
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt-staging
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: ListenerSet
+metadata:
+  name: app
+  namespace: <app namespace>
+spec:
+  parentRef:
+    name: ingress
+    namespace: istio-ingress
+  listeners:
+    - name: https
+      port: 443
+      protocol: HTTPS
+      hostname: <host>
+      tls:
+        certificateRefs:
+          - name: app-tls
+      allowedRoutes:
+        namespaces:
+          from: Same
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: app
+  namespace: <app namespace>
+spec:
+  parentRefs:
+    - kind: ListenerSet
+      group: gateway.networking.k8s.io
+      name: app
+  hostnames:
+    - <host>
+  rules:
+    - backendRefs:
+        - name: <service>
+          port: <port>
+```
+
+The namespace joins the mesh and gets its NetworkPolicy on its own. Pods
+must meet Pod Security `restricted`.
+
 ## How it works
 
 ### Accounts and SSH
@@ -293,6 +359,8 @@ The node itself runs in UTC.
 * Istio: the four OCIRepositories use `1.x`, so Flux upgrades Istio to
   every new 1.x release. Pods in the mesh lose their network for about a
   second while ztunnel restarts.
+* Kyverno: the OCIRepository uses `3.x`, so Flux upgrades it to every
+  new 3.x chart release.
 * Renovate opens pull requests for GitHub Actions, pre-commit hooks,
   Ansible collections, the system-upgrade-controller release and
   amazon-eks-pod-identity-webhook.
@@ -316,9 +384,13 @@ The node itself runs in UTC.
 * The bundled Traefik is disabled. The Istio Gateway `ingress` in
   `istio-ingress` listens on ports 80 and 443 of both node addresses.
   Port 80 only serves HTTP-01 challenges and redirects everything else
-  to HTTPS. Only routes from `istio-ingress` may use port 80.
-* Apps add an HTTPS listener with their host name and certificate to
-  the shared Gateway, and an HTTPRoute in their own namespace.
+  to HTTPS.
+* Apps add their HTTPS listener with a ListenerSet in their own
+  namespace, see [Add an app](#add-an-app).
+* The ValidatingAdmissionPolicy `ingress-gateway-rules` refuses routes
+  from other namespaces on the shared Gateway, except cert-manager's
+  challenge routes. It also refuses ListenerSets with a listener other
+  than HTTPS.
 
 ### Encryption in transit
 
@@ -343,7 +415,8 @@ The node itself runs in UTC.
 * cert-manager issues certificates from Let's Encrypt with HTTP-01
   through the Istio Gateway. Its challenge routes take precedence over
   the HTTPS redirect, because they name the exact host.
-* Certificates for the shared Gateway belong in `istio-ingress`.
+* Certificates belong in the app namespace, next to the app's
+  ListenerSet.
 * Two ClusterIssuers: `letsencrypt-staging` and
   `letsencrypt-production`. Staging certificates are not trusted by
   browsers, but staging has much higher rate limits.
@@ -423,13 +496,11 @@ The node itself runs in UTC.
   kube-system. Pods must run as non-root, drop all capabilities, disallow
   privilege escalation and use the `RuntimeDefault` seccomp profile.
   Check a manifest with `kubectl apply --dry-run=server`.
-* Every namespace has the NetworkPolicy `default-ingress`. It allows
-  ingress only from the same namespace and the node. The ResourceSet in
-  `infrastructure/network-policies/namespaces.yaml` creates it from one
-  template. Add each new namespace there.
-* Set `mesh: true` for a namespace in the mesh. Its policy then also
-  lets the ingress gateway in on port 15008, where Istio sends the
-  encrypted traffic.
+* Every namespace has the NetworkPolicy `namespace-ingress`. It allows
+  ingress from the same namespace, from the node, and from the ingress
+  gateway on port 15008, where Istio sends the encrypted traffic.
+* Kyverno creates it in every new namespace and recreates it if it is
+  changed or deleted. kube-system and kyverno keep their own copy.
 * Extra rules for one component are next to that component, for example
   `infrastructure/istio-ingress/network-policy.yaml`.
 * The API server audit log is at `/var/log/k3s-audit/audit.log` on the
