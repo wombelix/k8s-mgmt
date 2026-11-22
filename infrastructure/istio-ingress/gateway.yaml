@@ -1,0 +1,41 @@
+# SPDX-FileCopyrightText: 2026 Dominik Wombacher <dominik@wombacher.cc>
+#
+# SPDX-License-Identifier: Apache-2.0
+
+# One shared Gateway for all apps, istiod creates its Deployment and LoadBalancer Service
+# https://istio.io/latest/docs/tasks/traffic-management/ingress/gateway-api/
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: ingress
+  namespace: istio-ingress
+spec:
+  gatewayClassName: istio
+  listeners:
+    # Port 80 only serves Let's Encrypt HTTP-01 challenges and redirects everything else to HTTPS.
+    # Only routes from this namespace may attach, so no app can serve plain HTTP.
+    - name: http
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+---
+# Without a hostname this route has the lowest precedence, the challenge routes of cert-manager win
+# https://gateway-api.sigs.k8s.io/guides/http-redirect-rewrite/
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: https-redirect
+  namespace: istio-ingress
+spec:
+  parentRefs:
+    - name: ingress
+      sectionName: http
+  rules:
+    - filters:
+        - type: RequestRedirect
+          requestRedirect:
+            scheme: https
+            statusCode: 301

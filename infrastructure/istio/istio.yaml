@@ -110,6 +110,10 @@ spec:
       requests:
         cpu: 100m
         memory: 256Mi
+    # Gateway pods need it to pass Pod Security restricted
+    gateways:
+      seccompProfile:
+        type: RuntimeDefault
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease

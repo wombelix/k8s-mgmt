@@ -8,3 +8,4 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - istio.yaml
+  - network-policy.yaml
