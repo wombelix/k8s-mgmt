@@ -48,3 +48,4 @@ Each host in the Ansible inventory is one single-node cluster.
 ## Related
 
 - Extends: [ADR-0003](0003-separate-bootstrap-and-site-playbooks.md)
+- Extended by: [ADR-0028](0028-shared-infrastructure-in-two-ordered-groups.md)
