@@ -220,8 +220,8 @@
             - "{{ ansible_facts['default_ipv4']['address'] }}"
             - "{{ ansible_facts['default_ipv6']['address'] }}"
           # Dual-stack only works on a new cluster, an existing one needs a rebuild
-          cluster-cidr: "10.42.0.0/16,fd61:4655:2980::/56"
-          service-cidr: "10.43.0.0/16,fd61:4655:2980:100::/112"
+          cluster-cidr: "{{ k3s_cluster_cidr }}"
+          service-cidr: "{{ k3s_service_cidr }}"
           # ULA ranges are not routed, pods need NAT for outgoing IPv6
           flannel-ipv6-masq: true
           # The Istio ingress gateway replaces it, k3s keeps installing the Gateway API CRDs

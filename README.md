@@ -52,8 +52,8 @@ example `clusters/lab-wombacher-dev/`.
   * `ansible/node.yml`: sshd hardening, unattended-upgrades, k3s.
   * `ansible/cluster.yml`: helm on the node, Flux Operator, FluxInstance.
 * `ansible/kubeconfig.yml`: copies the kubeconfig to your machine.
-* `ansible/inventory.yml`: one line per cluster host. Shared settings
-  are in `all.vars`.
+* `ansible/inventory.yml`: one entry per cluster host with its pod and
+  service ranges. Shared settings are in `all.vars`.
 * `ansible/files/`: SSH public keys, one file per account.
   `known_hosts` holds the host keys the pipeline trusts.
 * `clusters/<cluster folder>/`: synced by Flux. FluxInstance, the
@@ -134,7 +134,12 @@ task site -- --limit lab.wombacher.dev --check --diff
 2. Set DNS: A and AAAA records for the host, and the reverse DNS of both
    IPs to the host name.
 3. Add the host to `all.hosts` in `ansible/inventory.yml`. Don't push
-   this yet, the pipeline would fail on the new host.
+   this yet, the pipeline would fail on the new host. Set
+   `k3s_cluster_cidr` and `k3s_service_cidr`: copy the IPv4 ranges and
+   create a new ULA prefix. Run `openssl rand -hex 5`, put `fd` in front
+   and split the result into groups of four, so `a1b2c3d4e5` becomes
+   `fda1:b2c3:d4e5`. Pods get `<prefix>::/56`, services get
+   `<prefix>:100::/112`.
 4. Create an age key for the cluster, see
    [Create an age key](#create-an-age-key).
    Add both of its parameters to `.params2env.yaml`.
