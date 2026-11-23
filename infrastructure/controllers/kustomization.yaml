@@ -1,0 +1,13 @@
+# SPDX-FileCopyrightText: 2026 Dominik Wombacher <dominik@wombacher.cc>
+#
+# SPDX-License-Identifier: Apache-2.0
+
+# Controllers and their CRDs, applied before infrastructure/configs
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../system-upgrade
+  - ../cert-manager
+  - ../istio
+  - ../kyverno

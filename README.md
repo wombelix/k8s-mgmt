@@ -32,8 +32,9 @@ Bootstrap and management of my k8s clusters.
 * Ansible configures the node, installs k3s and bootstraps Flux.
   A GitHub Actions pipeline runs it on push to `main`.
 * Flux syncs the cluster's folder in `clusters/` from this repo.
-  The cluster folder also applies `infrastructure/`, for example
-  system-upgrade-controller for k3s upgrades.
+  The cluster folder also applies `infrastructure/` in two groups:
+  controllers first, then the configs that need them, for example
+  system-upgrade-controller and its k3s upgrade Plan.
 * Secrets are encrypted with SOPS and age and stored in Git. Each cluster
   has its own age key.
 
@@ -56,8 +57,13 @@ example `clusters/lab-wombacher-dev/`.
 * `ansible/files/`: SSH public keys, one file per account.
   `known_hosts` holds the host keys the pipeline trusts.
 * `clusters/<cluster folder>/`: synced by Flux. FluxInstance, the
-  Flux Operator ResourceSet and the Kustomizations for the folders in
-  `infrastructure/`.
+  Flux Operator ResourceSet and two Kustomizations: `infra-controllers`
+  for `infrastructure/controllers/`, then `infra-configs` for
+  `infrastructure/configs/`.
+* `infrastructure/controllers/`: lists the folders with controllers and
+  their CRDs. A new infrastructure folder goes here or in `configs/`.
+* `infrastructure/configs/`: lists the folders that need the CRDs and
+  webhooks of the controllers.
 * `infrastructure/system-upgrade/`: system-upgrade-controller and the
   k3s upgrade Plan.
 * `infrastructure/cert-manager/`: cert-manager from its Helm chart.

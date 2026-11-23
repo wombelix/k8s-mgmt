@@ -2,182 +2,40 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-# deletionPolicy Orphan keeps the resources when step 2 replaces these Kustomizations.
-# Removed together with them.
-
+# Layout from https://github.com/fluxcd/flux2-kustomize-helm-example
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: system-upgrade
+  name: infra-controllers
   namespace: flux-system
 spec:
-  deletionPolicy: Orphan
-  interval: 10m
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
-  path: ./infrastructure/system-upgrade
-  prune: true
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: cert-manager
-  namespace: flux-system
-spec:
-  deletionPolicy: Orphan
-  interval: 10m
-  retryInterval: 2m
-  timeout: 5m
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
-  path: ./infrastructure/cert-manager
-  prune: true
-  # The issuers need the CRDs and a ready webhook
-  wait: true
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: cert-manager-issuers
-  namespace: flux-system
-spec:
-  deletionPolicy: Orphan
-  dependsOn:
-    - name: cert-manager
-  interval: 10m
-  retryInterval: 2m
-  timeout: 5m
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
-  path: ./infrastructure/cert-manager-issuers
-  prune: true
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: pod-identity-webhook
-  namespace: flux-system
-spec:
-  deletionPolicy: Orphan
-  # Needs the cert-manager CRDs and cainjector
-  dependsOn:
-    - name: cert-manager
-  interval: 10m
-  retryInterval: 2m
-  timeout: 5m
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
-  path: ./infrastructure/pod-identity-webhook
-  prune: true
-  wait: true
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: network-policies
-  namespace: flux-system
-spec:
-  deletionPolicy: Orphan
-  interval: 10m
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
-  path: ./infrastructure/network-policies
-  prune: true
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: istio
-  namespace: flux-system
-spec:
-  deletionPolicy: Orphan
   interval: 10m
   retryInterval: 2m
   timeout: 10m
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./infrastructure/istio
+  path: ./infrastructure/controllers
   prune: true
-  # istio-config needs the CRDs from the base chart
+  # infra-configs needs the CRDs and ready webhooks
   wait: true
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: istio-config
+  name: infra-configs
   namespace: flux-system
 spec:
-  deletionPolicy: Orphan
   dependsOn:
-    - name: istio
+    - name: infra-controllers
   interval: 10m
   retryInterval: 2m
   timeout: 5m
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./infrastructure/istio-config
+  path: ./infrastructure/configs
   prune: true
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: istio-ingress
-  namespace: flux-system
-spec:
-  deletionPolicy: Orphan
-  # istiod creates the istio GatewayClass
-  dependsOn:
-    - name: istio
-  interval: 10m
-  retryInterval: 2m
-  timeout: 5m
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
-  path: ./infrastructure/istio-ingress
-  prune: true
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: kyverno
-  namespace: flux-system
-spec:
-  deletionPolicy: Orphan
-  interval: 10m
-  retryInterval: 2m
-  timeout: 10m
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
-  path: ./infrastructure/kyverno
-  prune: true
-  # Kyverno policies need the CRDs and a ready webhook
+  # Ready only when the pod-identity-webhook is up, as before
   wait: true
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: kyverno-policies
-  namespace: flux-system
-spec:
-  deletionPolicy: Orphan
-  # Needs the Kyverno CRDs and a ready webhook
-  dependsOn:
-    - name: kyverno
-  interval: 10m
-  retryInterval: 2m
-  timeout: 5m
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
-  path: ./infrastructure/kyverno-policies
-  prune: true

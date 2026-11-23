@@ -1,0 +1,15 @@
+# SPDX-FileCopyrightText: 2026 Dominik Wombacher <dominik@wombacher.cc>
+#
+# SPDX-License-Identifier: Apache-2.0
+
+# Resources that need the CRDs and webhooks from infrastructure/controllers
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../cert-manager-issuers
+  - ../pod-identity-webhook
+  - ../istio-config
+  - ../istio-ingress
+  - ../kyverno-policies
+  - ../network-policies
